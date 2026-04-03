@@ -23,19 +23,32 @@ Projects are evaluated through a **4-stage streaming pipeline**:
 - Presentation & Demo (25%)
 - Feasibility & Sustainability (20%)
 
-## Quick Start with Docker
+## Quick Start
 
-The easiest way to run AI Judge — models are pulled automatically from Ollama Hub.
+### Prerequisites
+
+- [Docker](https://www.docker.com/products/docker-desktop/)
+- [Ollama](https://ollama.com) installed and running locally
+- NVIDIA GPU recommended (RTX 3090 or better)
+
+### 1. Install the Models
 
 ```bash
 git clone https://github.com/qjasonma/AI-Judge.git
 cd AI-Judge
-docker compose up --build
+ollama create slidejudge -f models/ModelfileSlides
+ollama create codejudge -f models/ModelfileCode
+ollama create textjudge -f models/ModelfileText
+ollama create finaljudge -f models/Modelfile
 ```
 
-Then open [http://localhost:5000](http://localhost:5000).
+### 2. Start the App
 
-> **GPU acceleration:** Uncomment the `deploy` section in `docker-compose.yml`.
+```bash
+docker compose up --build -d
+```
+
+Open [http://localhost:5000](http://localhost:5000), drag in a project folder, and hit Judge.
 
 ### Cloudflare Tunnel (Optional)
 
@@ -47,41 +60,20 @@ To expose the app publicly via Cloudflare Tunnel:
 CLOUDFLARE_TUNNEL_TOKEN=your_token_here
 ```
 
-2. Start with the tunnel profile:
+2. Start the app:
 
 ```bash
-docker compose --profile tunnel up -d
+docker compose up --build -d
 ```
 
-## Manual Setup
+The tunnel starts automatically alongside the app.
 
-### Prerequisites
-
-- Python 3.10+
-- [Ollama](https://ollama.com) running locally
-
-### Install
+## Manual Setup (Without Docker)
 
 ```bash
 pip install -r backend/requirements.txt
-```
-
-### Build the Models
-
-```bash
-ollama create slidejudge -f models/ModelfileSlides
-ollama create codejudge -f models/ModelfileCode
-ollama create textjudge -f models/ModelfileText
-ollama create finaljudge -f models/Modelfile
-```
-
-### Run
-
-```bash
 python backend/server.py
 ```
-
-Open [http://localhost:5000](http://localhost:5000), drag in a project folder, and hit Judge.
 
 ## Project Structure
 
