@@ -1,0 +1,27 @@
+So this is our demo project. Basically, it’ll help you with interviews for any company. It goes through behavioral, technical, or a combination of both in a full interview. Each section has subsections with specific focus areas.
+
+Right now, we’ll show the introduction section. Our target company in this demo is Google. My GitHub will be this, LinkedIn will be this, and the system scans your LinkedIn and parses your resume PDF as well.
+
+We’ll paste in a Google Software Engineer III job description, and it will use that to start the interview. It may take a bit to start since it needs to read through your resume and gather context.
+
+If I don’t look at the camera, my eye contact rating decreases. If I do look at it, the rating increases. We also have focus area coverage indicators, and as you talk to the AI, these check marks will update once enough information is gathered.
+
+Right now, I’m just going to say some random things for demo purposes. You can also adjust the pace of the AI’s speech—we’ll set it to 2x speed for this demo.
+
+These check marks won’t be completed until the AI has enough information, but for this demo, we’ll keep it short so it finishes in a few turns. The AI will analyze your responses and give suggestions on how to improve your interview performance.
+
+Now it’s generating a quick summary of my background. I’m a CS student at CU Boulder, going into a master’s program focused on AI/ML.
+
+Because we set the speed to 2x, transcription happens faster.
+
+One of my most exciting projects is a neural network-based ad blocker. If I keep my explanation too surface-level, I’ll lose points, which we’ll see in the final results.
+
+I used a neural network instead of a traditional list-based approach, since those require constant manual updates. With a trained neural network, the system can continuously learn and block unwanted ads more efficiently.
+
+Since this is just a demo, the interview is short. As you can see, the background and introduction sections are now complete.
+
+Now it’s gathering all the information and calculating the scores.
+
+It then shows your interview performance. This is a recorded session, so you can watch yourself, review your answers, and see a summary of your performance, including strengths and areas for improvement for each question.
+
+You can keep practicing.

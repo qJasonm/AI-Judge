@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Judge — File Categorizer</title>
+  <meta name="description" content="Drag and drop a folder to categorize files for AI analysis." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-glow"></div>
+      <h1 class="logo">
+        <span class="logo-icon">⚖️</span>
+        <span>AI <span class="accent">Judge</span></span>
+      </h1>
+      <p class="subtitle">Drop a folder. We'll sort it for the right AI.</p>
+    </header>
+
+    <!-- Drop Zone -->
+    <section class="drop-zone-wrapper">
+      <div id="dropZone" class="drop-zone">
+        <div class="drop-zone-content">
+          <div class="drop-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <h2 class="drop-title">Drop your folder here</h2>
+          <p class="drop-hint">or <button id="browseBtn" class="browse-btn">browse files</button></p>
+          <input type="file" id="folderInput" webkitdirectory directory multiple hidden />
+        </div>
+        <div class="drop-zone-active-overlay">
+          <span>Release to analyze</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section id="statsBar" class="stats-bar hidden">
+      <div class="stat" id="statTotal">
+        <span class="stat-value">0</span>
+        <span class="stat-label">Total Files</span>
+      </div>
+      <div class="stat stat-docs" id="statDocs">
+        <span class="stat-value">0</span>
+        <span class="stat-label">Presnt. & Video</span>
+      </div>
+      <div class="stat stat-code" id="statCode">
+        <span class="stat-value">0</span>
+        <span class="stat-label">Code</span>
+      </div>
+      <div class="stat stat-text" id="statText">
+        <span class="stat-value">0</span>
+        <span class="stat-label">Text Files</span>
+      </div>
+      <div class="stat stat-other" id="statOther">
+        <span class="stat-value">0</span>
+        <span class="stat-label">Other / Skipped</span>
+      </div>
+    </section>
+
+    <!-- Results Grid -->
+    <section id="resultsGrid" class="results-grid hidden">
+
+      <!-- Documents Column -->
+      <div class="category-card category-docs" id="catDocs">
+        <div class="category-header">
+          <div class="category-icon">📄</div>
+          <div>
+            <h3 class="category-title">Presentations</h3>
+            <p class="category-desc">PDF &amp; Video → Vision AI</p>
+          </div>
+          <span class="badge badge-docs" id="badgeDocs">0</span>
+        </div>
+        <ul class="file-list" id="listDocs"></ul>
+        <div class="empty-state" id="emptyDocs">No documents found</div>
+      </div>
+
+      <!-- Code Column -->
+      <div class="category-card category-code" id="catCode">
+        <div class="category-header">
+          <div class="category-icon">💻</div>
+          <div>
+            <h3 class="category-title">Code</h3>
+            <p class="category-desc">Source code → Code AI</p>
+          </div>
+          <span class="badge badge-code" id="badgeCode">0</span>
+        </div>
+        <ul class="file-list" id="listCode"></ul>
+        <div class="empty-state" id="emptyCode">No code files found</div>
+      </div>
+
+      <!-- Text Column -->
+      <div class="category-card category-text" id="catText">
+        <div class="category-header">
+          <div class="category-icon">📝</div>
+          <div>
+            <h3 class="category-title">Text Files</h3>
+            <p class="category-desc">.txt → Text AI</p>
+          </div>
+          <span class="badge badge-text" id="badgeText">0</span>
+        </div>
+        <ul class="file-list" id="listText"></ul>
+        <div class="empty-state" id="emptyText">No text files found</div>
+      </div>
+
+      <!-- Other Column -->
+      <div class="category-card category-other" id="catOther">
+        <div class="category-header">
+          <div class="category-icon">📦</div>
+          <div>
+            <h3 class="category-title">Other Files</h3>
+            <p class="category-desc">Uncategorized</p>
+          </div>
+          <span class="badge badge-other" id="badgeOther">0</span>
+        </div>
+        <ul class="file-list" id="listOther"></ul>
+        <div class="empty-state" id="emptyOther">No other files</div>
+      </div>
+
+    </section>
+
+    <!-- Extraction Results Panel -->
+    <section id="extractPanel" class="extract-panel hidden">
+      <div class="extract-header">
+        <div class="extract-header-icon">🔬</div>
+        <div>
+          <h3 class="extract-title">Code Extraction Results</h3>
+          <p class="extract-subtitle">Processed by repo_extract.py</p>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="extractStatus" class="extract-loading hidden">
+        <div class="spinner"></div>
+        <span>Extracting code structure…</span>
+      </div>
+
+      <!-- Error state -->
+      <div id="extractError" class="extract-error hidden"></div>
+
+      <!-- Results -->
+      <div id="extractResult" class="extract-result hidden">
+        <div class="extract-summary">
+          <div class="extract-stat">
+            <span class="extract-stat-label">Repository</span>
+            <span class="extract-stat-value" id="extractRepoName">—</span>
+          </div>
+          <div class="extract-stat">
+            <span class="extract-stat-label">Files Extracted</span>
+            <span class="extract-stat-value" id="extractFileCount">0</span>
+          </div>
+          <div class="extract-stat">
+            <span class="extract-stat-label">Total Size</span>
+            <span class="extract-stat-value" id="extractTotalSize">0 B</span>
+          </div>
+        </div>
+
+        <div class="extract-actions">
+          <button id="toggleJson" class="extract-btn">Hide JSON ▲</button>
+          <button id="copyJson" class="extract-btn extract-btn-accent">📋 Copy JSON</button>
+        </div>
+
+        <pre class="extract-json"><code id="extractContent"></code></pre>
+      </div>
+    </section>
+
+    <!-- PDF Extraction Results Panel -->
+    <section id="pdfPanel" class="pdf-panel hidden">
+      <div class="extract-header">
+        <div class="extract-header-icon">📄</div>
+        <div>
+          <h3 class="extract-title">Presentation & Demo Extraction</h3>
+          <p class="extract-subtitle">Unified Visual Timeline (PDFs and Videos) — Frame by Frame Breakdown</p>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="pdfStatus" class="extract-loading hidden">
+        <div class="spinner"></div>
+        <span>Extracting slides…</span>
+      </div>
+
+      <!-- Error state -->
+      <div id="pdfError" class="extract-error hidden"></div>
+
+      <!-- Results -->
+      <div id="pdfResult" class="pdf-result hidden">
+
+        <!-- Document-level metadata -->
+        <div class="extract-summary">
+          <div class="extract-stat">
+            <span class="extract-stat-label">Filename</span>
+            <span class="extract-stat-value pdf-accent" id="pdfFilename">—</span>
+          </div>
+          <div class="extract-stat">
+            <span class="extract-stat-label">Slides</span>
+            <span class="extract-stat-value pdf-accent" id="pdfSlideCount">0</span>
+          </div>
+          <div class="extract-stat">
+            <span class="extract-stat-label">File Size</span>
+            <span class="extract-stat-value pdf-accent" id="pdfFileSize">0 B</span>
+          </div>
+          <div class="extract-stat">
+            <span class="extract-stat-label">Author</span>
+            <span class="extract-stat-value pdf-accent" id="pdfAuthor">—</span>
+          </div>
+        </div>
+
+        <!-- Slide cards -->
+        <div id="pdfSlides" class="pdf-slides"></div>
+
+        <!-- JSON toggle -->
+        <div class="extract-actions" style="margin-top:1rem">
+          <button id="togglePdfJson" class="extract-btn">Show Raw JSON ▼</button>
+          <button id="copyPdfJson" class="extract-btn extract-btn-accent">📋 Copy JSON</button>
+        </div>
+        <pre class="extract-json collapsed" id="pdfJsonViewer"><code id="pdfJsonContent"></code></pre>
+      </div>
+    </section>
+
+    <!-- Judge Button + Verdict Panel -->
+    <section id="judgeSection" class="judge-section hidden">
+      <!-- Launch button -->
+      <button id="judgeBtn" class="judge-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Run AI Judge
+      </button>
+
+      <!-- Progress -->
+      <div id="judgeProgress" class="judge-progress hidden">
+        <div class="spinner"></div>
+        <span id="judgeProgressMsg">Starting AI judging pipeline…</span>
+      </div>
+
+      <!-- Error -->
+      <div id="judgeError" class="extract-error hidden"></div>
+
+      <!-- Verdict display -->
+      <div id="judgeVerdict" class="judge-verdict hidden">
+        <div class="verdict-header">
+          <span class="verdict-icon">⚖️</span>
+          <div>
+            <h3 class="verdict-title" id="verdictProjectName">Project Verdict</h3>
+            <p class="verdict-subtitle">Evaluated by finaljudge AI</p>
+          </div>
+          <div class="verdict-score-circle" id="verdictScoreCircle">
+            <span class="verdict-score-num" id="verdictScoreNum">0.0</span>
+            <span class="verdict-score-label">/ 5.00</span>
+          </div>
+        </div>
+
+        <!-- Score bars -->
+        <div class="verdict-scores" id="verdictScores"></div>
+
+        <!-- Feedback -->
+        <div class="verdict-feedback">
+          <div class="verdict-feedback-col verdict-strengths">
+            <h4>💪 Strengths</h4>
+            <ul id="verdictStrengths"></ul>
+          </div>
+          <div class="verdict-feedback-col verdict-improvements">
+            <h4>📈 Areas for Improvement</h4>
+            <ul id="verdictImprovements"></ul>
+          </div>
+        </div>
+
+        <div class="verdict-justification">
+          <h4>📝 Justification</h4>
+          <p id="verdictJustification"></p>
+        </div>
+
+        <!-- AI Reasoning -->
+        <div id="verdictReasoningSection" class="verdict-reasoning-section hidden">
+          <h4>🧠 AI Reasoning</h4>
+          <div class="verdict-reasoning-box" id="verdictReasoning"></div>
+
+          <!-- Intermediate reports reasoning -->
+          <details class="verdict-details" id="slidesReasoningDetails">
+            <summary>📊 Slides Analysis Reasoning</summary>
+            <div class="verdict-reasoning-box" id="slidesReasoning"></div>
+          </details>
+          <details class="verdict-details" id="codeReasoningDetails">
+            <summary>💻 Code Analysis Reasoning</summary>
+            <div class="verdict-reasoning-box" id="codeReasoning"></div>
+          </details>
+          <details class="verdict-details" id="textReasoningDetails">
+            <summary>💬 Speech & Text Analysis Reasoning</summary>
+            <div class="verdict-reasoning-box" id="textReasoning"></div>
+          </details>
+        </div>
+
+        <!-- Raw JSON -->
+        <div class="extract-actions" style="margin-top:1rem">
+          <button id="toggleVerdictJson" class="extract-btn">Show Full JSON ▼</button>
+          <button id="copyVerdictJson" class="extract-btn extract-btn-accent">📋 Copy Results</button>
+        </div>
+        <pre class="extract-json collapsed" id="verdictJsonViewer"><code id="verdictJsonContent"></code></pre>
+      </div>
+    </section>
+
+    <!-- Reset -->
+    <button id="resetBtn" class="reset-btn hidden">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Start Over
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

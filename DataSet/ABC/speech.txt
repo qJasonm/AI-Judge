@@ -1,0 +1,9 @@
+We already have it running. We've loaded in a local model as the overseer, and this is an existing ledger that is generated automatically. Then we can go to here. We run this bash command. It starts the watchdog. And now if I use the agent to do things inside my app.
+
+So, I'm going to say, uh, create a hello Adam program that says hello Adam in Python inside the closet app folder.
+
+So now whatever commands I give to my agent within this structure—say we created our folder here—we can say keep the watchdog logged that. And then if I go back here, I can see those actions are logged on our blockchain, and we can even verify the integrity of the chain.
+
+If we come here, if I close this chat and start a new one with a different agent, I can change from claw to GPT 5.4. Delete the hello Adam file.
+
+So now that file has been deleted. We'll keep that change. And if we go over here, we can see that file being deleted has been logged. Tells us which agent did it. Tells us when it did it. Boom. Bada boom.
