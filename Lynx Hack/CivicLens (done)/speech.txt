@@ -1,0 +1,43 @@
+Hello everyone, this is Civic Lens, a government policy simulation platform we built for Lynx Hack. Let me show you everything—from the code to the live demo—in five minutes.
+
+This is our GitHub repository. You can see we have two main folders: backend, which is our Python FastAPI server, and frontend, which is our Next.js app. Everything is fully working here.
+
+Let’s do a quick walkthrough of the repo.
+
+The backend is where all the intelligence lives. Inside the agents folder, we have three AI agents, each in a separate file: an economist, an urban planner, and an equity analyst. Each agent has its own system prompt that shapes how it evaluates a policy.
+
+Next, we have the data pipeline, which integrates sources like the Census API, FRED economic data, and Tavily web search. Everything is cached to disk so we don’t overload APIs on every run.
+
+Then there’s RAG, powered by a Chroma vector store. We embed all the data and retrieve only the most relevant chunks for each simulation.
+
+Finally, we have the simulation orchestrator. The main file ties everything together using LangGraph—it fetches context, runs all three agents in parallel, and combines their results.
+
+On the frontend side, we have several components. The simulation map uses Mapbox for a 3D visualization. The agent card displays each agent’s verdict, and the time slider lets you project impact over 1, 5, or 10 years.
+
+To run this locally, you need two terminals. In the first, go to the backend folder, activate the Poetry environment, and run the FastAPI server on port 8000. In the second terminal, go to the frontend folder and run the Next.js development server on localhost:3000.
+
+You’ll also need an .env file in the backend with API keys for Anthropic, Census, FRED, and Tavily, and a Mapbox token for the frontend. We provide example .env files in the repo showing exactly what’s needed.
+
+Now let’s see it in action.
+
+This is Civic Lens running locally. I’ll click the demo, which loads our prebuilt New York City rent control scenario. This is pre-cached, so it loads instantly.
+
+Here it is: Manhattan, with every neighborhood color-coded based on how strongly a 3% rent cap impacts it. Green indicates low impact, while red indicates high impact. The height of each block represents severity.
+
+This visualization is driven by real U.S. Census data. For example, this red cluster—East Harlem—has 73% of residents severely rent-burdened. That’s not an estimate; it’s real data.
+
+On the left, our three AI agents provide their analysis. The economist flags landlord exit rates and supply contraction. The urban planner evaluates gentrification and housing turnover. The equity analyst examines who actually benefits from the policy.
+
+The overall verdict is a moderate risk score of 63.8 out of 100.
+
+Now, I’ll switch to a 10-year projection. The map updates as impacts compound over time—areas become taller and redder. This reveals long-term effects that are often overlooked, such as reduced housing supply and increased displacement in vulnerable neighborhoods, similar to what happened in Berlin.
+
+We can simulate many other policies in the same way.
+
+To summarize, under the hood we use a FastAPI backend, LangGraph for orchestration, and Claude powering all three AI agents. Chroma stores over 300 embedded knowledge chunks from Census, FRED, and web data. The frontend uses Next.js and Tailwind, with Mapbox GL JS for 3D visualization.
+
+The entire system runs locally, with no external hosting required for the demo.
+
+This is Civic Lens: evidence-based government simulation, built for Lynx Hack.
+
+Thank you.

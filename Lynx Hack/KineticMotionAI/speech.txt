@@ -1,0 +1,27 @@
+Hey guys, my name is [Name], and the project I’m going to be showing you is Motion AI.
+
+Once you first open the app, you’ll get to this screen. You can choose your profile picture and create an account with a password. After that, it asks you a few questions to get to know you.
+
+For example, this is not about how many hours I should sleep — instead, we input things like energy level and freshness. So maybe an energy level of 7 and freshness of 4. I’m doing good, I guess. Then it gives you a short tutorial on how everything works.
+
+After that, you have access to all your sports. What this app really does is allow you to do workouts at home — like kicking a soccer ball, doing gymnastics, yoga, or anything else. Then it gives you feedback based on your movements.
+
+So you don’t have to pay for a coach or go to an hour-long training session. Instead, you can train at home with precise feedback and movement analysis. I also added GIFs to make it more interactive.
+
+We could try yoga as an example. I’ll show you how it works. Make sure I’m in frame. Another smart feature is that it scans your body and gives feedback. For example: “Good balance. Try to rotate the raised knee further outward to open the hips and bring palms together overhead.”
+
+That’s the idea. There’s also an instant mode, which is a faster AI live coach. You perform movements and it gives you feedback in real time, like a teacher.
+
+There’s an analytics page showing how athletic you are. You also have micro-lessons, settings, an about page, and a support section. You can always sign up by clicking this icon. As you can see, I’ve gained 100 XP, earned a trophy, completed one scan, and did an analysis.
+
+This is your daily hub. You can track things like sleep — for example, six hours — and your energy level, like a four. There’s also a recovery tracker for mobility sessions, warmups, and soreness, which gives you a score.
+
+You also have a daily agenda. For example, I can set a 25-minute activity and add it. There’s also a quick log where you can track things like water intake or protein throughout the day — for example, cups of water or grams of protein.
+
+You can also set long-term goals, like getting a six-pack before June.
+
+That’s basically it. I’ll quickly test the live feature. Let’s try it — ready? Start.
+
+Other than that, that’s everything. We have all the features covered.
+
+Thank you for watching this video. I hope you enjoyed it, and good luck to everyone else. Thank you.

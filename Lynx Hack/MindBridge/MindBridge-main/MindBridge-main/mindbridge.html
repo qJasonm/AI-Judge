@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindBridge - Denver Mental Health Navigator</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#FDF8F3;--white:#FFFFFF;
+  --warm-brown:#6B4E3D;--brown-light:#8B6455;
+  --sage:#8BAD8A;--sage-light:#EDF3EC;--sage-mid:#C8DCC7;
+  --terra:#C07A5A;--terra-light:#FAF0EA;
+  --text-dark:#2C1F18;--text-mid:#5C4A3F;--text-soft:#9C8B83;
+  --border:#E8DDD7;--border-mid:#D4C9C3;
+  --admin:#7C3AED;--admin-light:#F5F3FF;--admin-border:#DDD6FE;
+  --eligible:#1D6F4A;--eligible-light:#DCFCE7;--eligible-border:#BBF7D0;
+  --youth:#1E40AF;--youth-light:#DBEAFE;--youth-border:#BFDBFE;
+}
+html,body{min-height:100vh;font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text-dark)}
+nav{display:flex;align-items:center;padding:14px 40px;border-bottom:1px solid var(--border);background:var(--white);position:sticky;top:0;z-index:50;gap:10px;flex-wrap:wrap}
+.nav-logo{font-family:'Lora',serif;font-size:20px;font-weight:600;color:var(--warm-brown);letter-spacing:-0.3px;cursor:pointer;flex-shrink:0}
+.nav-logo span{color:var(--sage)}
+.nav-tabs{display:flex;gap:2px;margin-left:24px}
+.nav-tab{font-size:13px;padding:7px 14px;border-radius:99px;color:var(--text-mid);cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap}
+.nav-tab:hover{background:var(--cream);color:var(--text-dark)}
+.nav-tab.active{background:var(--cream);color:var(--warm-brown);font-weight:500}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crisis-pill{font-size:12px;padding:6px 13px;border-radius:99px;background:var(--terra-light);color:var(--terra);border:1px solid #E8C4B0;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.admin-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-soft);cursor:pointer;padding:6px 12px;border-radius:99px;border:1px solid var(--border);background:var(--white);font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all 0.15s}
+.admin-toggle.on{background:var(--admin-light);border-color:var(--admin-border);color:var(--admin)}
+.admin-dot{width:7px;height:7px;border-radius:50%;background:var(--border-mid);flex-shrink:0;transition:background 0.15s}
+.admin-toggle.on .admin-dot{background:var(--admin)}
+.page{display:none}.page.active{display:block}
+.page-hero{padding:36px 40px 0}
+.page-eyebrow{font-size:11px;font-weight:500;color:var(--sage);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px}
+.page-h1{font-family:'Lora',serif;font-size:34px;font-weight:600;color:var(--text-dark);line-height:1.2;margin-bottom:12px;letter-spacing:-0.4px}
+.page-h1 em{color:var(--terra);font-style:italic}
+.page-sub{font-size:15px;color:var(--text-mid);line-height:1.75;max-width:580px;margin-bottom:24px}
+
+/* IDENTITY BAR */
+.identity-bar{background:var(--white);border-bottom:1px solid var(--border);padding:12px 40px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:57px;z-index:40}
+.identity-label{font-size:12px;font-weight:500;color:var(--text-soft);white-space:nowrap;flex-shrink:0}
+.role-pills{display:flex;gap:6px;flex-wrap:wrap;flex:1}
+.role-pill{font-size:12px;padding:5px 13px;border-radius:99px;border:1px solid var(--border);background:var(--cream);color:var(--text-mid);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.role-pill:hover{border-color:var(--border-mid)}
+.role-pill.selected{background:var(--warm-brown);color:#fff;border-color:var(--warm-brown)}
+.under18-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;flex-shrink:0;padding:5px 0}
+.under18-box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border-mid);background:var(--white);display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.under18-box.checked{background:var(--youth);border-color:var(--youth)}
+.under18-check{font-size:10px;color:#fff;display:none}
+.under18-box.checked .under18-check{display:block}
+.under18-label{font-size:12px;color:var(--text-mid);white-space:nowrap}
+.identity-perks{font-size:12px;padding:5px 11px;border-radius:99px;display:none;align-items:center;gap:5px;white-space:nowrap}
+.identity-perks.show{display:flex}
+.identity-perks.student{background:var(--eligible-light);color:var(--eligible);border:1px solid var(--eligible-border)}
+.identity-perks.youth{background:var(--youth-light);color:var(--youth);border:1px solid var(--youth-border)}
+
+/* COMMUNITY */
+.community-layout{display:grid;grid-template-columns:1fr 308px;gap:28px;padding:24px 40px 100px;align-items:start}
+.compose-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.compose-label{font-size:13px;color:var(--text-soft);margin-bottom:10px}
+.compose-ta{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream);resize:none;outline:none;min-height:70px;line-height:1.6;transition:border-color 0.15s}
+.compose-ta:focus{border-color:var(--sage-mid)}
+.compose-ta::placeholder{color:var(--text-soft)}
+.compose-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.compose-note{font-size:11px;color:var(--text-soft)}
+.compose-btn{font-size:12px;padding:7px 16px;border-radius:99px;background:var(--sage);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.compose-btn:hover{background:#6B9669}
+.voice-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:14px;transition:border-color 0.2s}
+.voice-card:hover{border-color:var(--border-mid)}
+.vc-top{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.vc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+.vc-name{font-size:13px;font-weight:500;color:var(--text-dark)}
+.vc-role{font-size:11px;color:var(--text-soft)}
+.vc-time{font-size:11px;color:var(--text-soft);margin-left:auto}
+.vc-body{font-size:14px;color:var(--text-mid);line-height:1.8;margin-bottom:13px;user-select:text;cursor:text}
+.vc-foot{display:flex;align-items:center;gap:8px}
+.sol-btn{display:flex;align-items:center;gap:5px;font-size:12px;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:transparent;color:var(--text-soft);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.sol-btn:hover,.sol-btn.on{background:var(--sage-light);border-color:var(--sage-mid);color:#3D6B3C}
+.sidebar-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px}
+.sidebar-title{font-family:'Lora',serif;font-size:15px;font-weight:500;color:var(--text-dark);margin-bottom:13px}
+.res-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.res-row:last-child{border-bottom:none;padding-bottom:0}
+.res-name{font-size:13px;font-weight:500;color:var(--text-dark)}
+.res-detail{font-size:11px;color:var(--text-soft);margin-top:1px}
+.badge{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:500;white-space:nowrap}
+.badge-free{background:var(--sage-light);color:#3D6B3C}
+.badge-low{background:var(--terra-light);color:var(--terra)}
+.badge-crisis{background:#FEF0F0;color:#B03030}
+
+/* RESOURCES */
+.resources-layout{padding:24px 40px 100px}
+.filter-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px}
+.filter-btn{font-size:12px;padding:6px 14px;border-radius:99px;border:1px solid var(--border);background:var(--white);color:var(--text-mid);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.filter-btn:hover{border-color:var(--border-mid)}
+.filter-btn.on{background:var(--sage-light);border-color:var(--sage-mid);color:#3D6B3C;font-weight:500}
+.resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
+.rc{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;transition:border-color 0.2s,box-shadow 0.2s}
+.rc:hover{border-color:var(--border-mid)}
+.rc.eligible{border-color:var(--eligible-border);box-shadow:0 0 0 3px rgba(29,111,74,0.07)}
+.rc.youth-highlight{border-color:var(--youth-border);box-shadow:0 0 0 3px rgba(30,64,175,0.07)}
+.rc.dimmed{opacity:0.52}
+.rc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px}
+.rc-name{font-size:14px;font-weight:500;color:var(--text-dark);line-height:1.3}
+.rc-badges{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0}
+.rc-desc{font-size:13px;color:var(--text-mid);line-height:1.6;margin-bottom:7px}
+.rc-contact{font-size:12px;color:var(--text-soft);margin-bottom:7px}
+.rc-tags{display:flex;flex-wrap:wrap;gap:4px}
+.rc-tag{font-size:11px;padding:2px 7px;border-radius:99px;border:1px solid var(--border);color:var(--text-soft)}
+.eligible-badge{font-size:10px;padding:3px 8px;border-radius:99px;background:var(--eligible-light);color:var(--eligible);border:1px solid var(--eligible-border);font-weight:500;white-space:nowrap}
+.youth-badge{font-size:10px;padding:3px 8px;border-radius:99px;background:var(--youth-light);color:var(--youth);border:1px solid var(--youth-border);font-weight:500;white-space:nowrap}
+.restricted-badge{font-size:10px;padding:3px 8px;border-radius:99px;background:#FFF7ED;color:#9A3412;border:1px solid #FED7AA;font-weight:500;white-space:nowrap}
+.cost-badge{font-size:10px;padding:3px 8px;border-radius:99px;font-weight:500;white-space:nowrap}
+.eligibility-banner{border-radius:12px;padding:12px 16px;margin-bottom:20px;font-size:13px;display:none;align-items:center;gap:10px;line-height:1.5}
+.eligibility-banner.show{display:flex}
+.eligibility-banner.student{background:var(--eligible-light);border:1px solid var(--eligible-border);color:var(--eligible)}
+.eligibility-banner.youth{background:var(--youth-light);border:1px solid var(--youth-border);color:var(--youth)}
+.eligibility-banner.general{background:var(--terra-light);border:1px solid #E8C4B0;color:var(--warm-brown)}
+
+/* SUGGEST RESOURCE */
+.suggest-strip{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.suggest-strip-text{font-size:13px;color:var(--text-mid)}
+.suggest-strip-text strong{font-weight:500;color:var(--text-dark)}
+.suggest-btn{font-size:12px;padding:7px 16px;border-radius:99px;background:var(--warm-brown);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;white-space:nowrap}
+.suggest-btn:hover{background:var(--brown-light)}
+
+/* EVENTS */
+.events-layout{padding:24px 40px 100px}
+.events-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.submit-event-btn{font-size:13px;padding:8px 18px;border-radius:99px;background:var(--warm-brown);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.submit-event-btn:hover{background:var(--brown-light)}
+.events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.ev-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;transition:border-color 0.2s}
+.ev-card:hover{border-color:var(--border-mid)}
+.ev-card.pending{border-style:dashed;border-color:var(--admin-border);background:var(--admin-light)}
+.ev-top{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+.ev-date{text-align:center;flex-shrink:0;width:40px}
+.ev-month{font-size:10px;font-weight:500;color:var(--sage);text-transform:uppercase;letter-spacing:0.06em}
+.ev-day{font-size:26px;font-weight:500;color:var(--text-dark);line-height:1.1}
+.ev-title{font-size:14px;font-weight:500;color:var(--text-dark);margin-bottom:3px;line-height:1.3}
+.ev-where{font-size:12px;color:var(--text-soft);margin-bottom:8px}
+.ev-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.ev-tag{font-size:11px;padding:3px 8px;border-radius:99px;background:var(--sage-light);color:#3D6B3C;display:inline-block}
+.ev-free{font-size:11px;padding:3px 8px;border-radius:99px;background:var(--terra-light);color:var(--terra);display:inline-block}
+.pending-badge{font-size:10px;padding:2px 8px;border-radius:99px;background:var(--admin-light);color:var(--admin);border:1px solid var(--admin-border);font-weight:500;display:inline-block}
+.ev-safety{border-top:1px solid var(--border);padding-top:10px;display:flex;flex-direction:column;gap:5px}
+.ev-safety-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-mid)}
+.ev-safety-icon{font-size:13px;flex-shrink:0}
+.approve-btn{font-size:11px;padding:4px 10px;border-radius:99px;background:var(--admin);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;margin-top:8px}
+.reject-btn{font-size:11px;padding:4px 10px;border-radius:99px;background:transparent;color:#B03030;border:1px solid #F0C0C0;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;margin-left:5px}
+
+/* ADMIN BANNER */
+.admin-banner{background:var(--admin-light);border-bottom:1px solid var(--admin-border);padding:8px 40px;font-size:12px;color:var(--admin);display:none;align-items:center;gap:8px}
+.admin-banner.show{display:flex}
+.admin-dot-lg{width:7px;height:7px;border-radius:50%;background:var(--admin)}
+
+/* MODAL BASE */
+.modal-bg{position:fixed;inset:0;background:rgba(44,31,24,0.35);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal-box{background:var(--white);border-radius:20px;padding:28px;width:500px;max-width:94vw;max-height:90vh;overflow-y:auto}
+.modal-title{font-family:'Lora',serif;font-size:20px;font-weight:500;color:var(--text-dark);margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text-soft);margin-bottom:20px;line-height:1.6}
+.modal-field{margin-bottom:14px}
+.modal-label{font-size:12px;font-weight:500;color:var(--text-mid);margin-bottom:6px;display:block}
+.modal-input{width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream);outline:none;transition:border-color 0.15s}
+.modal-input:focus{border-color:var(--sage-mid)}
+.modal-input::placeholder{color:var(--text-soft)}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.modal-cancel{font-size:13px;padding:8px 18px;border-radius:99px;background:transparent;color:var(--text-mid);border:1px solid var(--border);cursor:pointer;font-family:'DM Sans',sans-serif}
+.modal-submit{font-size:13px;padding:8px 20px;border-radius:99px;background:var(--warm-brown);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.modal-submit:hover{background:var(--brown-light)}
+.modal-success{text-align:center;padding:20px 0}
+.modal-success-icon{width:52px;height:52px;border-radius:50%;background:var(--sage-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;color:#3D6B3C}
+.modal-success-title{font-family:'Lora',serif;font-size:18px;font-weight:500;color:var(--text-dark);margin-bottom:8px}
+.modal-success-sub{font-size:13px;color:var(--text-soft);line-height:1.6}
+.modal-section-divider{font-size:11px;font-weight:500;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.06em;margin:18px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* ABOUT */
+.about-layout{padding:24px 40px 100px;max-width:780px}
+.about-section{margin-bottom:40px}
+.about-h2{font-family:'Lora',serif;font-size:21px;font-weight:500;color:var(--text-dark);margin-bottom:12px}
+.about-p{font-size:15px;color:var(--text-mid);line-height:1.85;margin-bottom:12px}
+.about-values{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.value-card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px}
+.value-dot{width:30px;height:30px;border-radius:50%;margin-bottom:10px}
+.value-title{font-size:14px;font-weight:500;color:var(--text-dark);margin-bottom:4px}
+.value-desc{font-size:13px;color:var(--text-soft);line-height:1.6}
+.crisis-block{background:var(--terra-light);border:1px solid #E8C4B0;border-radius:14px;padding:20px}
+.crisis-block-title{font-family:'Lora',serif;font-size:16px;font-weight:500;color:var(--warm-brown);margin-bottom:12px}
+.crisis-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #E8C4B0}
+.crisis-item:last-child{border-bottom:none;padding-bottom:0}
+.crisis-item-name{font-size:13px;font-weight:500;color:var(--text-dark)}
+.crisis-item-num{font-size:13px;color:var(--terra);font-weight:500}
+
+/* HIGHLIGHT POPUP */
+#hl-popup{position:fixed;z-index:600;background:var(--text-dark);border-radius:12px;display:none;overflow:hidden;box-shadow:0 8px 32px rgba(44,31,24,0.22);min-width:200px}
+.hl-btn{display:flex;align-items:center;gap:8px;padding:11px 16px;font-size:13px;font-family:'DM Sans',sans-serif;color:#fff;cursor:pointer;background:none;border:none;width:100%;text-align:left;transition:background 0.12s}
+.hl-btn:hover{background:rgba(255,255,255,0.1)}
+.hl-btn-icon{width:20px;height:20px;border-radius:50%;background:var(--sage-light);color:#3D6B3C;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
+
+/* CHAT */
+#fab{position:fixed;bottom:28px;right:28px;width:54px;height:54px;border-radius:50%;background:var(--warm-brown);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:300;box-shadow:0 4px 22px rgba(107,78,61,0.35);transition:transform 0.2s,box-shadow 0.2s}
+#fab:hover{transform:scale(1.07)}
+.fab-chat{transition:opacity 0.2s,transform 0.2s}
+.fab-close{position:absolute;opacity:0;transition:opacity 0.2s,transform 0.2s;transform:rotate(-45deg)}
+#fab.open .fab-chat{opacity:0;transform:rotate(45deg)}
+#fab.open .fab-close{opacity:1;transform:rotate(0)}
+#chat-panel{position:fixed;bottom:92px;right:28px;width:344px;max-height:520px;background:var(--white);border-radius:22px;border:1px solid var(--border);box-shadow:0 14px 52px rgba(44,31,24,0.15);display:flex;flex-direction:column;z-index:299;transform:scale(0.88) translateY(18px);opacity:0;pointer-events:none;transform-origin:bottom right;transition:transform 0.24s cubic-bezier(0.34,1.56,0.64,1),opacity 0.18s;overflow:hidden}
+#chat-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.cp-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cp-av{width:30px;height:30px;border-radius:50%;background:var(--sage-light);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cp-av-dot{width:9px;height:9px;border-radius:50%;background:var(--sage)}
+.cp-title{font-family:'Lora',serif;font-size:14px;font-weight:500;color:var(--text-dark)}
+.cp-sub{font-size:11px;color:var(--text-soft)}
+.cp-x{margin-left:auto;background:none;border:none;color:var(--text-soft);cursor:pointer;font-size:21px;line-height:1;padding:0 2px;font-family:sans-serif}
+.cp-x:hover{color:var(--text-dark)}
+.cp-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth}
+.cm-row{display:flex;gap:7px;align-items:flex-end}
+.cm-row.user{flex-direction:row-reverse}
+.cm-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
+.cm-av.bot{background:var(--sage-light);color:#3D6B3C}
+.cm-av.user{background:var(--terra-light);color:var(--terra)}
+.cm-bub{max-width:84%;padding:9px 12px;border-radius:15px;font-size:13px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.cm-bub.bot{background:var(--cream);color:var(--text-dark);border:1px solid var(--border);border-bottom-left-radius:4px}
+.cm-bub.user{background:var(--warm-brown);color:#fff;border-bottom-right-radius:4px}
+.cm-context-pill{font-size:11px;padding:4px 10px;border-radius:99px;background:var(--sage-light);color:#3D6B3C;border:1px solid var(--sage-mid);margin-bottom:5px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cp-quick{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 9px;flex-shrink:0}
+.cp-qb{font-size:11px;padding:4px 10px;border-radius:99px;border:1px solid var(--border);background:var(--cream);color:var(--text-mid);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.12s}
+.cp-qb:hover{border-color:var(--border-mid);background:var(--white)}
+.cp-foot{border-top:1px solid var(--border);padding:9px 12px;display:flex;gap:7px;align-items:flex-end;flex-shrink:0}
+.cp-inp{flex:1;resize:none;border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream);outline:none;max-height:86px;line-height:1.5;transition:border-color 0.15s}
+.cp-inp:focus{border-color:var(--sage-mid)}
+.cp-inp::placeholder{color:var(--text-soft)}
+.cp-send{width:32px;height:32px;border-radius:50%;background:var(--warm-brown);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background 0.15s}
+.cp-send:hover{background:var(--brown-light)}
+.cp-send:disabled{opacity:0.4;cursor:not-allowed}
+.thinking-dots{display:flex;gap:4px;align-items:center;padding:1px 0}
+.tdot{width:5px;height:5px;border-radius:50%;background:var(--text-soft);animation:bop 1.2s infinite}
+.tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
+@keyframes bop{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+#agent-trace{border-top:1px solid var(--border);flex-shrink:0;max-height:0;overflow:hidden;transition:max-height 0.35s ease}
+#agent-trace.open{max-height:240px}
+.trace-header{padding:7px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:var(--cream)}
+.trace-header-label{font-size:11px;font-weight:500;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:6px}
+.trace-pip{width:6px;height:6px;border-radius:50%;background:var(--border-mid);transition:background 0.3s}
+.trace-pip.active{background:#1D9E75;box-shadow:0 0 0 3px rgba(29,158,117,0.2)}
+.trace-body{overflow-y:auto;max-height:200px;padding:0 14px 10px}
+.trace-step{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.trace-step:last-child{border-bottom:none}
+.trace-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;margin-top:1px}
+.ts-pending{background:var(--cream);border:1px solid var(--border);color:var(--text-soft)}
+.ts-running{background:#DBEAFE;border:1px solid #BFDBFE;color:#1E40AF}
+.ts-done{background:var(--eligible-light);border:1px solid var(--eligible-border);color:var(--eligible)}
+.ts-crisis{background:#FEF0F0;border:1px solid #F7C1C1;color:#B03030}
+.trace-step-name{font-size:11px;font-weight:500;color:var(--text-dark);margin-bottom:2px}
+.trace-step-detail{font-size:11px;color:var(--text-soft);line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="admin-banner" id="admin-banner">
+  <div class="admin-dot-lg"></div>
+  Admin mode active - you can approve or reject submitted events and resources
+</div>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('community')">Mind<span>Bridge</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-community" onclick="showPage('community')">Community</button>
+    <button class="nav-tab" id="tab-resources" onclick="showPage('resources')">Resources</button>
+    <button class="nav-tab" id="tab-events" onclick="showPage('events')">Events</button>
+    <button class="nav-tab" id="tab-about" onclick="showPage('about')">About</button>
+  </div>
+  <div class="nav-right">
+    <button class="admin-toggle" id="admin-toggle" onclick="toggleAdmin()">
+      <div class="admin-dot"></div>Admin mode
+    </button>
+    <button class="crisis-pill">988 - Crisis Line</button>
+  </div>
+</nav>
+
+<!-- IDENTITY BAR -->
+<div class="identity-bar">
+  <span class="identity-label">I am a</span>
+  <div class="role-pills">
+    <button class="role-pill" id="role-auraria" onclick="setRole('auraria')">&#127891; Auraria student</button>
+    <button class="role-pill" id="role-faculty" onclick="setRole('faculty')">&#128218; Faculty / staff</button>
+    <button class="role-pill" id="role-community" onclick="setRole('community')">&#127970; Denver resident</button>
+    <button class="role-pill" id="role-parent" onclick="setRole('parent')">&#128106; Parent / family</button>
+    <button class="role-pill" id="role-other" onclick="setRole('other')">&#128075; Just browsing</button>
+  </div>
+  <div class="identity-perks" id="identity-perks"></div>
+</div>
+
+<!-- COMMUNITY -->
+<div class="page active" id="page-community">
+  <div class="page-hero">
+    <div class="page-eyebrow">Denver, Colorado</div>
+    <h1 class="page-h1">Voices from <em>our community.</em></h1>
+    <p class="page-sub">Real people, real experiences. Share something - a struggle, a win, a feeling. <strong style="font-weight:500;color:var(--warm-brown)">Highlight any text in a post</strong> to ask MindBridge about resources related to it.</p>
+  </div>
+  <div class="community-layout">
+    <div>
+      <div class="compose-card">
+        <div class="compose-label">What's on your mind? You're always anonymous here.</div>
+        <textarea class="compose-ta" id="compose-ta" placeholder="Share a feeling, a resource you found, a moment of courage..."></textarea>
+        <div class="compose-foot">
+          <span class="compose-note">Anonymous &middot; Never identified</span>
+          <button class="compose-btn" onclick="submitPost()">Post anonymously</button>
+        </div>
+      </div>
+      <div id="voices-feed"></div>
+    </div>
+    <div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Quick resources</div>
+        <div class="res-row"><div><div class="res-name">Health Center at Auraria</div><div class="res-detail">303-615-9999 &middot; All Auraria students</div></div><span class="badge badge-free">Free</span></div>
+        <div class="res-row"><div><div class="res-name">TELUS Health</div><div class="res-detail">866-743-7732 &middot; 24/7</div></div><span class="badge badge-free">Free</span></div>
+        <div class="res-row"><div><div class="res-name">Colorado Crisis</div><div class="res-detail">1-844-493-8255 &middot; Walk-in</div></div><span class="badge badge-crisis">Crisis</span></div>
+        <div class="res-row"><div><div class="res-name">Open Path Collective</div><div class="res-detail">openpathcollective.org</div></div><span class="badge badge-low">$30-60</span></div>
+        <div class="res-row"><div><div class="res-name">Denver Element</div><div class="res-detail">720-382-5900 &middot; LGBTQ+</div></div><span class="badge badge-low">Sliding scale</span></div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">This week</div>
+        <div id="sidebar-events"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESOURCES -->
+<div class="page" id="page-resources">
+  <div class="resources-layout">
+    <div class="page-eyebrow">Denver &amp; beyond</div>
+    <h1 class="page-h1">Support that <em>fits your life.</em></h1>
+    <p class="page-sub">Every resource is here for everyone. Select your role above to see which ones you're eligible for.</p>
+    <div class="eligibility-banner student" id="student-banner">
+      &#127891;&nbsp;<span id="student-banner-text">As an Auraria student, highlighted resources are free or discounted for you - most students never find out.</span>
+    </div>
+    <div class="eligibility-banner youth" id="youth-banner">
+      &#128274;&nbsp;<span>Under-18 resources are highlighted. Some require a parent or guardian - those are marked below.</span>
+    </div>
+    <div class="eligibility-banner general" id="general-banner">
+      &#128075;&nbsp;<span>Resources marked <strong style="font-weight:500">Students only</strong> need campus enrollment - everything else is open to you.</span>
+    </div>
+    <div class="suggest-strip">
+      <div class="suggest-strip-text"><strong>Know a resource we're missing?</strong> Submit a suggestion and our admin will review it.</div>
+      <button class="suggest-btn" onclick="openSuggestModal()">+ Suggest a resource</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <div class="filter-row" id="filter-row" style="margin-bottom:0;flex:1"></div>
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:6px 12px;border-radius:99px;border:1px solid var(--border);background:var(--white);font-size:12px;color:var(--text-mid);white-space:nowrap;transition:all 0.15s" id="under18-label-wrap" onclick="toggleUnder18()">
+        <div class="under18-box" id="under18-box"><span class="under18-check">&#10003;</span></div>
+        Under 18
+      </label>
+    </div>
+    <div class="resource-grid" id="resource-grid"></div>
+    <div id="pending-resources-section" style="display:none;margin-top:32px">
+      <div style="font-size:13px;font-weight:500;color:var(--admin);margin-bottom:14px;display:flex;align-items:center;gap:7px"><div class="admin-dot-lg"></div>Pending resource suggestions</div>
+      <div class="resource-grid" id="pending-resource-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EVENTS -->
+<div class="page" id="page-events">
+  <div class="events-layout">
+    <div class="page-eyebrow">Denver &middot; April - May 2026</div>
+    <div class="events-header">
+      <div>
+        <h1 class="page-h1" style="margin-bottom:6px">Things to <em>show up to.</em></h1>
+        <p style="font-size:14px;color:var(--text-mid);line-height:1.7">Free and low-cost events around Denver. Know of one? Submit it.</p>
+      </div>
+      <button class="submit-event-btn" onclick="openEventModal()">+ Submit an event</button>
+    </div>
+    <div class="events-grid" id="events-grid"></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="page-about">
+  <div class="about-layout">
+    <div class="page-eyebrow">Our mission</div>
+    <h1 class="page-h1">Built for the gap <em>between okay and crisis.</em></h1>
+    <div class="about-section">
+      <p class="about-p">Most people who need mental health support are not in crisis - they're just stuck. They don't know where to start, what's free, or whether what they're feeling even "counts." MindBridge exists to close that gap.</p>
+      <p class="about-p">We connect people in Denver - students at CU Denver, MSU Denver, and CCD, workers, parents, youth, anyone - to real mental health resources at every level. No gatekeeping. No judgment.</p>
+    </div>
+    <div class="about-section">
+      <div class="about-h2">What we believe</div>
+      <div class="about-values">
+        <div class="value-card"><div class="value-dot" style="background:var(--sage-light)"></div><div class="value-title">Community first</div><div class="value-desc">Healing happens in connection. Peer voices matter as much as clinical resources.</div></div>
+        <div class="value-card"><div class="value-dot" style="background:var(--terra-light)"></div><div class="value-title">No cost should be a barrier</div><div class="value-desc">Every resource we surface has a free or low-cost option. We refuse to leave anyone out.</div></div>
+        <div class="value-card"><div class="value-dot" style="background:#EEE8F8"></div><div class="value-title">Anonymity protects</div><div class="value-desc">The community feed is anonymous by design. Sharing is safer when you're not identified.</div></div>
+        <div class="value-card"><div class="value-dot" style="background:#FDF3E0"></div><div class="value-title">AI as a bridge, not a replacement</div><div class="value-desc">Our navigator helps you find the next step - it never replaces a real human connection.</div></div>
+      </div>
+    </div>
+    <div class="about-section">
+      <div class="about-h2">If you're in crisis right now</div>
+      <div class="crisis-block">
+        <div class="crisis-block-title">Immediate support - always free</div>
+        <div class="crisis-item"><span class="crisis-item-name">988 Suicide &amp; Crisis Lifeline</span><span class="crisis-item-num">Call or text 988</span></div>
+        <div class="crisis-item"><span class="crisis-item-name">Colorado Crisis Services</span><span class="crisis-item-num">1-844-493-8255</span></div>
+        <div class="crisis-item"><span class="crisis-item-name">Crisis Text Line</span><span class="crisis-item-num">Text HOME to 741741</span></div>
+        <div class="crisis-item"><span class="crisis-item-name">Auraria Campus Crisis</span><span class="crisis-item-num">303-615-9911</span></div>
+        <div class="crisis-item"><span class="crisis-item-name">Trans Lifeline</span><span class="crisis-item-num">877-565-8860</span></div>
+        <div class="crisis-item"><span class="crisis-item-name">Trevor Project (LGBTQ+ youth)</span><span class="crisis-item-num">1-866-488-7386</span></div>
+      </div>
+    </div>
+    <div class="about-section">
+      <div class="about-h2">Built for Denver</div>
+      <p class="about-p">MindBridge was created at the CU Denver Hackathon. We're students who felt the gap ourselves. The AI navigator is powered by Claude. The resources are real. None of this replaces a human - it just helps you find one.</p>
+      <div style="margin-top:20px;padding:16px 20px;background:var(--white);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-dark);margin-bottom:3px">Get in touch</div>
+          <div style="font-size:13px;color:var(--text-soft)">Questions, partnerships, or resource suggestions</div>
+        </div>
+        <a href="mailto:mindbridge@gmail.com" style="font-size:13px;font-weight:500;color:var(--warm-brown);text-decoration:none;padding:8px 16px;border-radius:99px;border:1px solid var(--border);background:var(--cream)">mindbridge@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HIGHLIGHT POPUP -->
+<div id="hl-popup">
+  <button class="hl-btn" onclick="askMindBridge()">
+    <div class="hl-btn-icon">MB</div>
+    Ask MindBridge about this
+  </button>
+</div>
+
+<!-- EVENT MODAL -->
+<div class="modal-bg" id="event-modal-bg" onclick="closeModalBg('event-modal-bg')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div id="event-form-view">
+      <div class="modal-title">Submit an event</div>
+      <div class="modal-sub">Know of a free or low-cost mental health event in Denver? An admin will review it before it goes live.</div>
+      <div class="modal-field"><label class="modal-label">Event title</label><input class="modal-input" id="ev-title" placeholder="e.g. Mindfulness workshop"></div>
+      <div class="modal-row">
+        <div class="modal-field"><label class="modal-label">Month</label><select class="modal-input" id="ev-month"><option>APR</option><option>MAY</option><option>JUN</option><option>JUL</option></select></div>
+        <div class="modal-field"><label class="modal-label">Day</label><input class="modal-input" id="ev-day" type="number" min="1" max="31" placeholder="15"></div>
+      </div>
+      <div class="modal-field"><label class="modal-label">Location &amp; time</label><input class="modal-input" id="ev-where" placeholder="e.g. Student Wellness Center &middot; Free &middot; 2-3pm"></div>
+      <div class="modal-field"><label class="modal-label">Category</label><select class="modal-input" id="ev-tag"><option>On campus</option><option>Community</option><option>LGBTQ+</option><option>Online</option><option>Outdoor</option><option>Counseling</option><option>Volunteer</option></select></div>
+      <div class="modal-section-divider">Safety &amp; contact info</div>
+      <div class="modal-field"><label class="modal-label">Instagram handle <span style="color:var(--text-soft);font-weight:400">(optional)</span></label><input class="modal-input" id="ev-instagram" placeholder="@organization_handle"></div>
+      <div class="modal-field"><label class="modal-label">On-site contact name</label><input class="modal-input" id="ev-contact-name" placeholder="e.g. Maria, event coordinator"></div>
+      <div class="modal-field"><label class="modal-label">On-site contact phone or email</label><input class="modal-input" id="ev-contact-info" placeholder="e.g. 303-555-0100 or maria@org.org"></div>
+      <div class="modal-foot">
+        <button class="modal-cancel" onclick="closeModal('event-modal-bg')">Cancel</button>
+        <button class="modal-submit" onclick="submitEvent()">Submit for review</button>
+      </div>
+    </div>
+    <div id="event-success-view" class="modal-success" style="display:none">
+      <div class="modal-success-icon">&#10003;</div>
+      <div class="modal-success-title">Event submitted!</div>
+      <div class="modal-success-sub">An admin will review your submission. Once approved, it'll appear in the events feed for the whole community to see.</div>
+      <div style="margin-top:20px"><button class="modal-submit" onclick="closeModal('event-modal-bg')">Done</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGEST RESOURCE MODAL -->
+<div class="modal-bg" id="suggest-modal-bg" onclick="closeModalBg('suggest-modal-bg')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div id="suggest-form-view">
+      <div class="modal-title">Suggest a resource</div>
+      <div class="modal-sub">Know of a mental health resource we're missing? Submit it below. Our admin will review it before it's added to the directory.</div>
+      <div class="modal-field"><label class="modal-label">Resource name</label><input class="modal-input" id="sug-name" placeholder="e.g. MSU Denver Counseling Center"></div>
+      <div class="modal-field"><label class="modal-label">What they offer</label><input class="modal-input" id="sug-desc" placeholder="e.g. Free counseling for MSU students, 8 sessions/yr"></div>
+      <div class="modal-field"><label class="modal-label">Contact (phone, website, or address)</label><input class="modal-input" id="sug-contact" placeholder="e.g. 303-615-0123 or msudenver.edu/counseling"></div>
+      <div class="modal-row">
+        <div class="modal-field"><label class="modal-label">Approximate cost</label><select class="modal-input" id="sug-cost"><option>Free</option><option>Sliding scale</option><option>Low cost ($5-60)</option><option>Insurance accepted</option><option>Unknown</option></select></div>
+        <div class="modal-field"><label class="modal-label">Who is it for?</label><select class="modal-input" id="sug-who"><option>Everyone</option><option>Auraria students</option><option>Youth (under 18)</option><option>LGBTQ+ community</option><option>Faculty &amp; staff</option><option>Families</option></select></div>
+      </div>
+      <div class="modal-foot">
+        <button class="modal-cancel" onclick="closeModal('suggest-modal-bg')">Cancel</button>
+        <button class="modal-submit" onclick="submitSuggestion()">Submit for review</button>
+      </div>
+    </div>
+    <div id="suggest-success-view" class="modal-success" style="display:none">
+      <div class="modal-success-icon">&#10003;</div>
+      <div class="modal-success-title">Thanks for the suggestion!</div>
+      <div class="modal-success-sub">Our admin will review it shortly. If approved, it'll appear in the Resources directory for the whole community.</div>
+      <div style="margin-top:20px"><button class="modal-submit" onclick="closeModal('suggest-modal-bg')">Done</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button id="fab" onclick="toggleChat()" aria-label="Open MindBridge chat">
+  <svg class="fab-chat" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+  <svg class="fab-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+</button>
+
+<!-- CHAT PANEL -->
+<div id="chat-panel">
+  <div class="cp-head">
+    <div class="cp-av"><div class="cp-av-dot"></div></div>
+    <div><div class="cp-title">MindBridge</div><div class="cp-sub" id="cp-sub">Resource navigator &middot; Not a therapist</div></div>
+    <button class="cp-x" onclick="toggleChat()">&#215;</button>
+  </div>
+  <div class="cp-msgs" id="cp-msgs"></div>
+  <div id="cp-key-prompt" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px;gap:12px;text-align:center">
+    <div style="width:40px;height:40px;border-radius:50%;background:var(--sage-light);display:flex;align-items:center;justify-content:center;font-size:18px">&#128274;</div>
+    <div style="font-size:14px;font-weight:500;color:var(--text-dark);font-family:'Lora',serif">Enter your API key</div>
+    <div style="font-size:12px;color:var(--text-soft);line-height:1.6">Paste your Anthropic API key to enable the AI chat. It stays in this browser tab only and is never saved.</div>
+    <input id="api-key-input" type="password" placeholder="sk-ant-..." style="width:100%;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text-dark);background:var(--cream);outline:none;text-align:center;letter-spacing:0.05em" onkeydown="if(event.key==='Enter')submitApiKey()">
+    <button onclick="submitApiKey()" style="font-size:13px;padding:8px 20px;border-radius:99px;background:var(--warm-brown);color:#fff;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;width:100%">Enable chat</button>
+    <div id="key-error" style="font-size:11px;color:#B03030;display:none">That does not look right - Anthropic keys start with sk-ant-</div>
+  </div>
+  <div class="cp-quick" id="cp-quick">
+    <button class="cp-qb" onclick="qs('I am overwhelmed and do not know where to start')">Feeling overwhelmed</button>
+    <button class="cp-qb" onclick="qs('I cannot afford therapy')">Can't afford therapy</button>
+    <button class="cp-qb" onclick="qs('I need to talk to someone right now')">Talk now</button>
+    <button class="cp-qb" onclick="qs('I feel really isolated and alone')">Feeling isolated</button>
+    <button class="cp-qb" onclick="qs('I need LGBTQ+ affirming support in Denver')">LGBTQ+ support</button>
+    <button class="cp-qb" onclick="qs('My friend is struggling, how can I help?')">Help a friend</button>
+  </div>
+  <div id="agent-trace">
+    <div class="trace-header" onclick="toggleTrace()">
+      <div class="trace-header-label">
+        <div class="trace-pip" id="trace-pip"></div>
+        Agent reasoning trace
+      </div>
+      <span id="trace-toggle-label" style="font-size:11px;color:var(--text-soft)">show</span>
+    </div>
+    <div class="trace-body" id="trace-body"></div>
+  </div>
+  <div class="cp-foot">
+    <textarea class="cp-inp" id="cp-inp" rows="1" placeholder="What's going on..."></textarea>
+    <button class="cp-send" id="cp-send" onclick="sendChat()">&#8593;</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────
+const VOICES=[
+  {initials:'A',bg:'#EDF3EC',fg:'#3D6B3C',role:'Denver resident',time:'2h ago',body:'First time going to a therapist in my 30s. I kept telling myself I was not sick enough to need help. Turns out you do not have to be in crisis to deserve support. If you have been putting it off, this is your sign.',solidarity:47},
+  {initials:'B',bg:'#FAF0EA',fg:'#8B4A2A',role:'CU Denver student',time:'4h ago',body:'Did not know CU Denver gives you 10 free counseling sessions a year until a friend mentioned it. I have been here three years. Why is this not plastered everywhere? Book your intake at the SCCC, call 303-315-7270.',solidarity:112},
+  {initials:'C',bg:'#EEE8F8',fg:'#5E3A8A',role:'MSU Denver student',time:'7h ago',body:'MSU students have access to the Health Center at Auraria too. It is the same campus. Took me a year to figure out these resources were available to me. Sharing so others do not wait as long as I did.',solidarity:67},
+  {initials:'D',bg:'#E6F1FB',fg:'#1A5296',role:'Healthcare worker',time:'1d ago',body:'Spent years taking care of others and ignoring my own burnout. Finally used Colorado Crisis Services, not for a crisis, just to talk. They were kind, unhurried, and pointed me to ongoing support. You do not have to be at rock bottom.',solidarity:203},
+  {initials:'E',bg:'#FDF3E0',fg:'#7A5200',role:'Denver parent',time:'1d ago',body:'Looking for affordable therapy for my teenager. Denver Health takes Medicaid and has a youth behavioral health program. Long wait list but worth getting on early. The sooner you start, the better.',solidarity:74},
+  {initials:'F',bg:'#FAF0EA',fg:'#8B4A2A',role:'Anon',time:'2d ago',body:'For anyone in the LGBTQ+ community, Denver Element is incredible. Affirming, sliding scale, actual queer counselors. 4242 Delaware St. Do not settle for someone who just says they are ally friendly.',solidarity:318},
+  {initials:'G',bg:'#EDF3EC',fg:'#3D6B3C',role:'CCD student',time:'3d ago',body:'Community College of Denver student here. Did not think I qualified for any of the campus mental health stuff. Turns out the Health Center at Auraria covers all three schools on this campus. Game changer.',solidarity:89},
+];
+
+// eligibility: 'all' | 'auraria' | 'faculty' | 'youth'
+const RESOURCES=[
+  {name:'Health Center at Auraria',cost:'Free / low cost',costClass:'badge-free',desc:'Medical and mental health services for students at CU Denver, MSU Denver, and CCD. All three schools on the Auraria campus are covered.',contact:'303-615-9999',tags:['All Auraria students','On campus'],cat:'campus',eligibility:'auraria',youth:false},
+  {name:'SCCC Counseling Center (CU Denver)',cost:'Free',costClass:'badge-free',desc:'10 free sessions/year. Walk-in crisis Mon-Thu 12-4pm. Individual, couples, and group therapy. CU Denver students only.',contact:'303-315-7270',tags:['Walk-in crisis','CU Denver only'],cat:'campus',eligibility:'auraria',youth:false},
+  {name:'TELUS Health Student Support',cost:'Free',costClass:'badge-free',desc:'24/7 confidential support by app, phone, or web chat. Available to all Auraria campus students at any hour.',contact:'866-743-7732',tags:['24/7','App available','All Auraria'],cat:'campus',eligibility:'auraria',youth:false},
+  {name:'CU Denver Psychology Clinic',cost:'$5/session',costClass:'badge-low',desc:'Evidence-based therapy from doctoral students supervised by licensed psychologists. Community members pay $5-25/session.',contact:'303-315-7080',tags:['On campus','Evidence-based'],cat:'campus',eligibility:'auraria',youth:false},
+  {name:'MSU Denver Student Wellness',cost:'Free',costClass:'badge-free',desc:'Counseling and wellness services for MSU Denver students. Short-term individual therapy, crisis support, and wellness coaching.',contact:'303-615-0231',tags:['MSU Denver','On campus'],cat:'campus',eligibility:'auraria',youth:false},
+  {name:'CSEAP (Faculty & Staff)',cost:'Free',costClass:'badge-free',desc:'Colorado State Employee Assistance Program. Free mental health counseling, crisis response, and mediation for CU employees.',contact:'1-800-821-8154',tags:['Faculty & staff only'],cat:'campus',eligibility:'faculty',youth:false},
+  {name:'Colorado Crisis Services',cost:'Free',costClass:'badge-free',desc:'24/7 crisis support by phone, text, or walk-in. No appointment or insurance needed. Walk-in at 4353 E Colfax Ave, Denver.',contact:'1-844-493-8255 or text TALK to 38255',tags:['24/7','Walk-in','No insurance needed'],cat:'crisis',eligibility:'all',youth:true},
+  {name:'988 Suicide & Crisis Lifeline',cost:'Free',costClass:'badge-free',desc:'Call or text 988 anywhere in the US. For any mental health crisis, not only suicidal thoughts. Immediate human support.',contact:'Call or text 988',tags:['24/7','Nationwide'],cat:'crisis',eligibility:'all',youth:true},
+  {name:'Crisis Text Line',cost:'Free',costClass:'badge-free',desc:'Text-based crisis support when you cannot make a call. Trained counselors available 24/7.',contact:'Text HOME to 741741',tags:['24/7','Text only'],cat:'crisis',eligibility:'all',youth:true},
+  {name:'Trevor Project',cost:'Free',costClass:'badge-free',desc:'Crisis support specifically for LGBTQ+ youth 24/7 by call, text, or chat. Safe, affirming, and confidential.',contact:'1-866-488-7386 or text START to 678-678',tags:['LGBTQ+','Youth focused','24/7'],cat:'crisis',eligibility:'all',youth:true},
+  {name:'Trans Lifeline',cost:'Free',costClass:'badge-free',desc:'Peer support by and for trans people. Confidential, no nonconsensual 911 calls. Available beyond crisis too.',contact:'877-565-8860',tags:['Trans-specific','Peer-run','24/7'],cat:'crisis',eligibility:'all',youth:false},
+  {name:'Jeffco / Denver School Counselors',cost:'Free',costClass:'badge-free',desc:'All public schools have licensed counselors on-site. Your school counselor can connect you to mental health support, no referral needed.',contact:'Ask your school counselor',tags:['School-based','No referral needed'],cat:'crisis',eligibility:'all',youth:true},
+  {name:'Denver Health Behavioral Health',cost:'Sliding scale',costClass:'badge-low',desc:'Therapy, group therapy, and medication management. Accepts Medicaid, Medicare, and most insurance. Youth programs available.',contact:'303-436-4949',tags:['Medicaid','All ages','Youth programs'],cat:'community',eligibility:'all',youth:true},
+  {name:'Adolescent & Child Outpatient (Denver Health)',cost:'Sliding scale',costClass:'badge-low',desc:'Behavioral and emotional support for children ages 2-17 and young adults 18-25. Accepts Medicaid and most insurance.',contact:'303-436-4949',tags:['Ages 2-25','Medicaid','Specialist'],cat:'community',eligibility:'all',youth:true},
+  {name:'Maria Droste Counseling Center',cost:'Sliding scale',costClass:'badge-low',desc:'Nonprofit with 25+ licensed therapists. For those with limited income or inadequate insurance. Individuals, couples, families.',contact:'303-756-9052',tags:['Nonprofit','No insurance OK'],cat:'community',eligibility:'all',youth:false},
+  {name:'Denver Element',cost:'Sliding scale',costClass:'badge-low',desc:'LGBTQ+-specific therapy, group sessions, and peer support. Queer-identifying counselors. Accepts Medicaid.',contact:'720-382-5900',tags:['LGBTQ+','Medicaid','Peer support'],cat:'community',eligibility:'all',youth:false},
+  {name:'Open Path Collective',cost:'$30-60/session',costClass:'badge-low',desc:'One-time $65 membership unlocks a national network of therapists at reduced rates. In-person and online.',contact:'openpathcollective.org',tags:['Nationwide','Online available'],cat:'community',eligibility:'all',youth:false},
+  {name:'Sheridan Health Services',cost:'Sliding scale',costClass:'badge-low',desc:'Integrative low-cost primary care, behavioral health, and psychiatric services in southwest Denver.',contact:'303-315-6150',tags:['Sliding scale','Psychiatry'],cat:'community',eligibility:'all',youth:false},
+  {name:'NAMI Helpline',cost:'Free',costClass:'badge-free',desc:'Information, referrals, and support for individuals and families. Mon-Fri 10am-10pm ET.',contact:'1-800-950-6264',tags:['Nationwide','Family support'],cat:'national',eligibility:'all',youth:false},
+  {name:'Find a Health Center (HRSA)',cost:'Free/sliding scale',costClass:'badge-free',desc:'Federally Qualified Health Centers offer free or sliding-scale care nationwide. Find one by zip code.',contact:'findahealthcenter.hrsa.gov',tags:['Nationwide','Any location'],cat:'national',eligibility:'all',youth:false},
+];
+
+const FILTERS=[{id:'all',label:'All resources'},{id:'campus',label:'On campus'},{id:'crisis',label:'Crisis & 24/7'},{id:'community',label:'Denver community'},{id:'national',label:'Nationwide'}];
+
+let EVENTS=[
+  {month:'APR',day:8,title:'Mindfulness & stress relief workshop',where:'Student Wellness Center',tag:'On campus',instagram:'@auraria_wellness',contact_name:'Jess Rivera',contact_info:'jess@aurariacampus.edu',approved:true},
+  {month:'APR',day:11,title:'Open anxiety support group',where:'SCCC, CU Denver',tag:'Counseling',instagram:'@cudenver_sccc',contact_name:'Dr. Patel',contact_info:'303-315-7270',approved:true},
+  {month:'APR',day:14,title:'Grief & loss support circle',where:'Maria Droste Center',tag:'Community',instagram:'@mariadrostecenter',contact_name:'Counseling desk',contact_info:'303-756-9052',approved:true},
+  {month:'APR',day:15,title:'LGBTQ+ peer social',where:'Denver Element',tag:'LGBTQ+',instagram:'@denver_element',contact_name:'Alex (events lead)',contact_info:'720-382-5900',approved:true},
+  {month:'APR',day:17,title:'Coping with academic pressure panel',where:'Virtual event',tag:'Online',instagram:'@mindbridge_denver',contact_name:'MindBridge team',contact_info:'mindbridge@cu.edu',approved:true},
+  {month:'APR',day:19,title:'Walk & talk nature therapy',where:'City Park, Denver',tag:'Outdoor',instagram:'@denverparksrec',contact_name:'Sam Nguyen',contact_info:'720-555-0188',approved:true},
+  {month:'APR',day:22,title:'Mental health awareness fair',where:'Auraria Campus Plaza',tag:'On campus',instagram:'@auraria_campus',contact_name:'Student affairs desk',contact_info:'303-556-2515',approved:true},
+  {month:'APR',day:24,title:'Burnout recovery workshop',where:'Denver Public Library, Central',tag:'Community',instagram:'@denverlibrary',contact_name:'Community programs',contact_info:'720-865-1111',approved:true},
+];
+
+let PENDING_RESOURCES=[];
+let currentRole=null,under18=false,adminMode=false;
+
+const ROLE_PERKS={
+  auraria:'As an Auraria student (CU Denver, MSU Denver, or CCD), you have access to free or discounted campus resources below.',
+  faculty:'As CU faculty or staff, CSEAP offers free counseling and crisis support.',
+  community:'All community resources are open to you, no enrollment needed.',
+  parent:'Resources for families and youth are highlighted below.',
+  other:'Browse everything and filter by what fits.',
+};
+
+// ── IDENTITY ──────────────────────────────────────────────────────────
+function setRole(r){
+  currentRole=currentRole===r?null:r;
+  document.querySelectorAll('.role-pill').forEach(b=>b.classList.remove('selected'));
+  if(currentRole) document.getElementById('role-'+currentRole).classList.add('selected');
+  updatePerks(); renderResources(currentFilter()); updateChatContext();
+}
+function toggleUnder18(){
+  under18=!under18;
+  document.getElementById('under18-box').classList.toggle('checked',under18);
+  updatePerks(); renderResources(currentFilter()); updateChatContext();
+}
+function updatePerks(){
+  const perks=document.getElementById('identity-perks');
+  perks.className='identity-perks';
+  if(under18){perks.classList.add('show','youth');perks.textContent='Youth resources highlighted \u2014 some need a parent or guardian.';}
+  else if(currentRole==='auraria'||currentRole==='faculty'){perks.classList.add('show','student');perks.textContent=ROLE_PERKS[currentRole];}
+  else if(currentRole){perks.classList.add('show','student');perks.textContent=ROLE_PERKS[currentRole];}
+  else perks.textContent='';
+}
+function currentFilter(){return document.querySelector('.filter-btn.on')?.dataset?.id||'all';}
+
+// ── PAGE NAV ──────────────────────────────────────────────────────────
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  const t=document.getElementById('tab-'+n);if(t)t.classList.add('active');
+  window.scrollTo(0,0);hideHlPopup();
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────────
+function toggleAdmin(){
+  adminMode=!adminMode;
+  document.getElementById('admin-toggle').classList.toggle('on',adminMode);
+  document.getElementById('admin-banner').classList.toggle('show',adminMode);
+  renderEvents(); renderResources(currentFilter());
+}
+
+// ── VOICES ────────────────────────────────────────────────────────────
+const solState={};
+function renderVoices(){
+  const feed=document.getElementById('voices-feed');
+  VOICES.forEach((v,i)=>{
+    const c=document.createElement('div');c.className='voice-card';
+    c.innerHTML='<div class="vc-top"><div class="vc-av" style="background:'+v.bg+';color:'+v.fg+'">'+v.initials+'</div><div style="flex:1"><div class="vc-name">Anon</div><div class="vc-role">'+v.role+'</div></div><div class="vc-time">'+v.time+'</div></div><div class="vc-body">'+v.body+'</div><div class="vc-foot"><button class="sol-btn" id="sol-'+i+'" onclick="toggleSol('+i+','+v.solidarity+')">&#9825;&nbsp;<span id="sc-'+i+'">'+v.solidarity+'</span>&nbsp;me too</button></div>';
+    feed.appendChild(c);
+  });
+  const se=document.getElementById('sidebar-events');
+  EVENTS.filter(e=>e.approved).slice(0,4).forEach(e=>{
+    const row=document.createElement('div');row.className='res-row';
+    row.innerHTML='<div><div class="res-name">'+e.title+'</div><div class="res-detail">'+e.where+'</div></div>';
+    se.appendChild(row);
+  });
+}
+function toggleSol(i,base){
+  solState[i]=!solState[i];
+  document.getElementById('sol-'+i).classList.toggle('on',solState[i]);
+  document.getElementById('sc-'+i).textContent=solState[i]?base+1:base;
+}
+function submitPost(){
+  const ta=document.getElementById('compose-ta');const text=ta.value.trim();if(!text)return;
+  const colors=[['#EDF3EC','#3D6B3C'],['#FAF0EA','#8B4A2A'],['#EEE8F8','#5E3A8A'],['#FDF3E0','#7A5200']];
+  const[bg,fg]=colors[Math.floor(Math.random()*colors.length)];
+  const init=String.fromCharCode(65+Math.floor(Math.random()*26));
+  const c=document.createElement('div');c.className='voice-card';
+  c.innerHTML='<div class="vc-top"><div class="vc-av" style="background:'+bg+';color:'+fg+'">'+init+'</div><div style="flex:1"><div class="vc-name">Anon</div><div class="vc-role">Denver community</div></div><div class="vc-time">just now</div></div><div class="vc-body">'+text+'</div><div class="vc-foot"><button class="sol-btn">&#9825;&nbsp;<span>0</span>&nbsp;me too</button></div>';
+  const first=document.getElementById('voices-feed').querySelector('.voice-card');
+  document.getElementById('voices-feed').insertBefore(c,first);
+  ta.value='';ta.style.height='auto';
+}
+
+// ── RESOURCES ─────────────────────────────────────────────────────────
+function isEligible(r){
+  if(r.eligibility==='auraria'&&currentRole==='auraria')return true;
+  if(r.eligibility==='faculty'&&currentRole==='faculty')return true;
+  return false;
+}
+function isYouthHighlight(r){return under18&&r.youth;}
+function isRestricted(r){return(r.eligibility==='auraria'||r.eligibility==='faculty')&&currentRole&&!isEligible(r);}
+
+function renderResources(filter='all'){
+  const grid=document.getElementById('resource-grid');grid.innerHTML='';
+  const sb=document.getElementById('student-banner'),yb=document.getElementById('youth-banner'),gb=document.getElementById('general-banner');
+  sb.classList.remove('show');yb.classList.remove('show');gb.classList.remove('show');
+  if(under18) yb.classList.add('show');
+  if(currentRole==='auraria'||currentRole==='faculty') sb.classList.add('show');
+  else if(currentRole) gb.classList.add('show');
+
+  const list=filter==='all'?RESOURCES:RESOURCES.filter(r=>r.cat===filter);
+  const sorted=[...list].sort((a,b)=>{
+    const ae=isEligible(a)||isYouthHighlight(a),be=isEligible(b)||isYouthHighlight(b);
+    return ae&&!be?-1:!ae&&be?1:0;
+  });
+  sorted.forEach(r=>{
+    const elig=isEligible(r),yhl=isYouthHighlight(r),restricted=isRestricted(r);
+    const c=document.createElement('div');
+    c.className='rc'+(elig?' eligible':yhl?' youth-highlight':restricted?' dimmed':'');
+    let bh='<span class="cost-badge '+r.costClass+'">'+r.cost+'</span>';
+    if(elig) bh+='<span class="eligible-badge">You\'re eligible</span>';
+    else if(yhl) bh+='<span class="youth-badge">&#128274; Youth resource</span>';
+    else if(r.eligibility==='auraria') bh+='<span class="restricted-badge">Auraria students</span>';
+    else if(r.eligibility==='faculty') bh+='<span class="restricted-badge">Faculty &amp; staff</span>';
+    c.innerHTML='<div class="rc-top"><div class="rc-name">'+r.name+'</div><div class="rc-badges">'+bh+'</div></div><div class="rc-desc">'+r.desc+'</div><div class="rc-contact">'+r.contact+'</div><div class="rc-tags">'+r.tags.map(t=>'<span class="rc-tag">'+t+'</span>').join('')+'</div>';
+    grid.appendChild(c);
+  });
+
+  const psec=document.getElementById('pending-resources-section');
+  if(adminMode&&PENDING_RESOURCES.length>0){
+    psec.style.display='block';
+    const pg=document.getElementById('pending-resource-grid');pg.innerHTML='';
+    PENDING_RESOURCES.forEach((r,i)=>{
+      const c=document.createElement('div');c.className='rc';c.style.borderStyle='dashed';c.style.borderColor='var(--admin-border)';c.style.background='var(--admin-light)';
+      c.innerHTML='<div class="rc-top"><div class="rc-name">'+r.name+'</div><span class="pending-badge">Pending</span></div><div class="rc-desc">'+r.desc+'</div><div class="rc-contact">'+r.contact+'</div><div style="margin-top:8px;display:flex;gap:6px"><button class="approve-btn" onclick="approveSuggestion('+i+')">&#10003; Approve</button><button class="reject-btn" onclick="rejectSuggestion('+i+')">&#215; Reject</button></div>';
+      pg.appendChild(c);
+    });
+  } else psec.style.display='none';
+}
+
+function renderFilters(){
+  const row=document.getElementById('filter-row');
+  FILTERS.forEach(f=>{
+    const b=document.createElement('button');
+    b.className='filter-btn'+(f.id==='all'?' on':'');b.textContent=f.label;b.dataset.id=f.id;
+    b.onclick=()=>{document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');renderResources(f.id);};
+    row.appendChild(b);
+  });
+}
+
+function approveSuggestion(i){
+  const r=PENDING_RESOURCES[i];
+  RESOURCES.push({name:r.name,cost:r.cost,costClass:'badge-low',desc:r.desc,contact:r.contact,tags:['Community suggested'],cat:'community',eligibility:'all',youth:false});
+  PENDING_RESOURCES.splice(i,1);
+  renderResources(currentFilter());
+}
+function rejectSuggestion(i){PENDING_RESOURCES.splice(i,1);renderResources(currentFilter());}
+
+// ── EVENTS ────────────────────────────────────────────────────────────
+function renderEvents(){
+  const grid=document.getElementById('events-grid');grid.innerHTML='';
+  const visible=adminMode?EVENTS:EVENTS.filter(e=>e.approved);
+  visible.forEach((e,i)=>{
+    const isPending=!e.approved;
+    const c=document.createElement('div');c.className='ev-card'+(isPending?' pending':'');
+    let tagsHtml=(isPending?'<span class="pending-badge">Pending review</span> ':'')+' <span class="ev-tag">'+e.tag+'</span> <span class="ev-free">Free</span>';
+    let safetyHtml='';
+    if(e.instagram||e.contact_name){
+      safetyHtml='<div class="ev-safety">';
+      if(e.instagram) safetyHtml+='<div class="ev-safety-row"><span class="ev-safety-icon">&#128247;</span><a href="https://instagram.com/'+e.instagram.replace('@','')+'" style="color:var(--warm-brown);text-decoration:none">'+e.instagram+'</a></div>';
+      if(e.contact_name) safetyHtml+='<div class="ev-safety-row"><span class="ev-safety-icon">&#128100;</span><span>'+e.contact_name+(e.contact_info?' &middot; '+e.contact_info:'')+'</span></div>';
+      safetyHtml+='</div>';
+    }
+    let adminBtns=isPending&&adminMode?'<div style="margin-top:10px"><button class="approve-btn" onclick="approveEvent('+i+')">&#10003; Approve</button><button class="reject-btn" onclick="rejectEvent('+i+')">&#215; Reject</button></div>':'';
+    c.innerHTML='<div class="ev-top"><div class="ev-date"><div class="ev-month">'+e.month+'</div><div class="ev-day">'+e.day+'</div></div><div style="flex:1"><div class="ev-title">'+e.title+'</div><div class="ev-where">'+e.where+'</div><div class="ev-tags">'+tagsHtml+'</div></div></div>'+safetyHtml+adminBtns;
+    grid.appendChild(c);
+  });
+}
+function approveEvent(i){EVENTS[i].approved=true;renderEvents();}
+function rejectEvent(i){EVENTS.splice(i,1);renderEvents();}
+
+// ── MODALS ────────────────────────────────────────────────────────────
+function openEventModal(){document.getElementById('event-form-view').style.display='block';document.getElementById('event-success-view').style.display='none';document.getElementById('event-modal-bg').classList.add('show');}
+function openSuggestModal(){document.getElementById('suggest-form-view').style.display='block';document.getElementById('suggest-success-view').style.display='none';document.getElementById('suggest-modal-bg').classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function closeModalBg(id){return;}
+
+function submitEvent(){
+  const title=document.getElementById('ev-title').value.trim(),day=document.getElementById('ev-day').value.trim(),where=document.getElementById('ev-where').value.trim();
+  const contactName=document.getElementById('ev-contact-name').value.trim(),contactInfo=document.getElementById('ev-contact-info').value.trim();
+  if(!title||!day||!where||!contactName||!contactInfo){alert('Please fill in all required fields including the on-site contact.');return;}
+  EVENTS.push({month:document.getElementById('ev-month').value,day:parseInt(day),title,where,tag:document.getElementById('ev-tag').value,instagram:document.getElementById('ev-instagram').value.trim(),contact_name:contactName,contact_info:contactInfo,approved:false});
+  document.getElementById('event-form-view').style.display='none';document.getElementById('event-success-view').style.display='block';
+  ['ev-title','ev-day','ev-where','ev-instagram','ev-contact-name','ev-contact-info'].forEach(id=>document.getElementById(id).value='');
+  renderEvents();
+}
+
+function submitSuggestion(){
+  const name=document.getElementById('sug-name').value.trim(),desc=document.getElementById('sug-desc').value.trim(),contact=document.getElementById('sug-contact').value.trim();
+  if(!name||!desc||!contact){alert('Please fill in all fields.');return;}
+  PENDING_RESOURCES.push({name,desc,contact,cost:document.getElementById('sug-cost').value});
+  document.getElementById('suggest-form-view').style.display='none';document.getElementById('suggest-success-view').style.display='block';
+  ['sug-name','sug-desc','sug-contact'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ── HIGHLIGHT ─────────────────────────────────────────────────────────
+const hlPopup=document.getElementById('hl-popup');let currentSelection='';let selectionContext='';
+const EXCL=new Set(['H1','H2','H3','H4','H5','H6','NAV','BUTTON','LABEL','SELECT','OPTION']);
+
+function isExcl(node){
+  let el=node.nodeType===3?node.parentElement:node;
+  while(el){
+    if(EXCL.has(el.tagName))return true;
+    if(el.classList&&(el.classList.contains('page-h1')||el.classList.contains('sidebar-title')||el.classList.contains('modal-title')||el.classList.contains('nav-logo')||el.classList.contains('identity-bar')))return true;
+    if(el===document.body)break;
+    el=el.parentElement;
+  }
+  return false;
+}
+
+function isInCommunityPost(node){
+  let el=node.nodeType===3?node.parentElement:node;
+  while(el){
+    if(el.classList&&(el.classList.contains('vc-body')||el.classList.contains('rc-desc')||el.classList.contains('rc-name')||el.classList.contains('about-p')))return true;
+    if(el===document.body)break;
+    el=el.parentElement;
+  }
+  return false;
+}
+
+function getSelectionContext(node){
+  let el=node.nodeType===3?node.parentElement:node;
+  while(el){
+    if(el.classList&&el.classList.contains('vc-body'))return 'community_post';
+    if(el.classList&&(el.classList.contains('rc-desc')||el.classList.contains('rc-name')))return 'resource';
+    if(el.classList&&el.classList.contains('about-p'))return 'about';
+    if(el===document.body)break;
+    el=el.parentElement;
+  }
+  return 'general';
+}
+
+document.addEventListener('mouseup',e=>{
+  if(hlPopup.contains(e.target))return;
+  setTimeout(()=>{
+    const sel=window.getSelection();const text=sel?sel.toString().trim():'';
+    if(text.length<8||text.length>300){hideHlPopup();return;}
+    try{
+      const range=sel.getRangeAt(0);
+      const ancestor=range.commonAncestorContainer;
+      if(isExcl(ancestor)){hideHlPopup();return;}
+      // Only show popup on community posts, resource descriptions, or about page
+      if(!isInCommunityPost(ancestor)){hideHlPopup();return;}
+      const rect=range.getBoundingClientRect();if(rect.width===0){hideHlPopup();return;}
+      currentSelection=text;
+      selectionContext=getSelectionContext(ancestor);
+      let left=rect.left+rect.width/2-110;left=Math.max(8,Math.min(left,window.innerWidth-228));
+      hlPopup.style.left=left+'px';hlPopup.style.top=(rect.top+window.scrollY)+'px';hlPopup.style.transform='translateY(calc(-100% - 6px))';hlPopup.style.display='block';
+    }catch(err){hideHlPopup();}
+  },50);
+});
+document.addEventListener('mousedown',e=>{if(!hlPopup.contains(e.target))hideHlPopup();});
+function hideHlPopup(){hlPopup.style.display='none';currentSelection='';selectionContext='';}
+function askMindBridge(){
+  const text=currentSelection;const ctx=selectionContext;
+  hideHlPopup();
+  window.getSelection().removeAllRanges();
+  if(!text)return;
+  if(!chatOpen)toggleChat();
+  setTimeout(()=>sendChatWithContext(text,ctx),350);
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────
+let chatHistory=[],chatLoading=false,chatOpen=false,apiKey='';
+let traceVisible=false;
+
+// ── RESOURCE KNOWLEDGE BASE (for agent matching) ──────────────────────
+const KB_RESOURCES=RESOURCES; // reuse the existing RESOURCES array
+
+// ── AGENT SYSTEM ──────────────────────────────────────────────────────
+const AGENTS={
+  intake:{
+    name:'Agent 1 - Intake & triage',
+    system:`You are a mental health intake agent. You must respond with ONLY a JSON object. No explanation, no markdown, no backticks, no extra text whatsoever. Just the raw JSON object starting with { and ending with }.
+
+Example output:
+{"urgency":"medium","isCrisis":false,"topics":["cost","therapy"],"emotionalState":"seeking_info","needsImmediate":false,"contextClues":["uninsured"]}
+
+Urgency levels: "crisis" (danger to self/others), "high" (severe distress), "medium" (struggling), "low" (informational).
+Topics pick from: anxiety, isolation, cost, lgbtq, youth, burnout, therapy, family, depression, trauma, substance, grief.
+EmotionalState: distressed, seeking_info, curious, supporting_friend.
+ContextClues pick from: student, uninsured, under18, lgbtq, faculty, parent, employed, veteran.`
+  },
+  matcher:{
+    name:'Agent 2 - Resource matcher',
+    system:`You are a resource matching agent for Denver mental health. You must respond with ONLY a JSON object. No explanation, no markdown, no backticks, no extra text. Just raw JSON starting with { and ending with }.
+
+Example output:
+{"selectedResources":["Open Path Collective","Denver Health Behavioral Health"],"reasoning":"User cannot afford therapy so sliding scale and low-cost options are the best fit."}
+
+Pick 2-3 resource names exactly as given. selectedResources must be an array of strings.`
+  },
+  explainer:{
+    name:'Agent 3 - Explainer',
+    system:`You are a compassionate explainer. You must respond with ONLY a JSON object. No explanation, no markdown, no backticks, no extra text. Just raw JSON starting with { and ending with }.
+
+Example output:
+{"explanations":{"Open Path Collective":"Since cost is your main barrier, Open Path connects you with real therapists for $30-60 a session after a one-time $65 membership.","Denver Health Behavioral Health":"They use a sliding scale based on income, so you only pay what you can afford, and they accept Medicaid."}}
+
+Write one warm, plain-language sentence per resource explaining why it fits this specific person.`
+  },
+  composer:{
+    name:'Agent 4 - Response composer',
+    system:`You are MindBridge, a warm mental health resource navigator for Denver. Compose a final reply using the structured data provided. Be warm, human, and concise. Format: acknowledge their situation in 1-2 sentences, then list the matched resources with their contact info and the personalized reason each fits. End with one encouraging sentence. Use plain language, no jargon. Never use em-dashes.`
+  },
+  crisis:{
+    name:'Crisis route agent',
+    system:`You are MindBridge crisis support agent. The user may be in crisis. Respond immediately with warmth and these resources: 988 (call or text), Colorado Crisis Services 1-844-493-8255 or text TALK to 38255 with walk-in at 4353 E Colfax, Crisis Text Line text HOME to 741741, Auraria crisis 303-615-9911. Acknowledge what they shared, give resources clearly, tell them they do not have to face this alone. Keep it brief and human.`
+  }
+};
+
+async function callAgent(agentKey, userContent, extraSystem=''){
+  const agent=AGENTS[agentKey];
+  const sys=agent.system+(extraSystem?'\n\n'+extraSystem:'');
+  const res=await fetch('http://localhost:3000/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:sys,messages:[{role:'user',content:userContent}]})
+  });
+  const data=await res.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content.map(b=>b.text||'').join('').trim();
+}
+
+function parseJSON(text){
+  try{
+    // Strip markdown fences and whitespace
+    let clean=text.replace(/```json|```/g,'').trim();
+    // Find the first { and last } to extract just the JSON object
+    const start=clean.indexOf('{');
+    const end=clean.lastIndexOf('}');
+    if(start!==-1&&end!==-1&&end>start){
+      clean=clean.slice(start,end+1);
+    }
+    return JSON.parse(clean);
+  }catch(e){return null;}
+}
+
+// ── TRACE UI ──────────────────────────────────────────────────────────
+const TRACE_STEPS=[
+  {key:'intake',label:'Agent 1',name:'Intake & triage',detail:'Reading your message...'},
+  {key:'crisis_check',label:'A1',name:'Crisis check',detail:'Checking urgency level...'},
+  {key:'matcher',label:'Agent 2',name:'Resource matcher',detail:'Searching knowledge base...'},
+  {key:'explainer',label:'Agent 3',name:'Explainer',detail:'Personalizing recommendations...'},
+  {key:'composer',label:'Agent 4',name:'Response composer',detail:'Writing your reply...'},
+];
+
+function initTrace(){
+  const body=document.getElementById('trace-body');
+  body.innerHTML='';
+  TRACE_STEPS.forEach(s=>{
+    const div=document.createElement('div');div.className='trace-step';div.id='trace-'+s.key;
+    div.innerHTML='<div class="trace-icon ts-pending" id="ti-'+s.key+'">'+s.label+'</div><div><div class="trace-step-name">'+s.name+'</div><div class="trace-step-detail" id="td-'+s.key+'">Waiting...</div></div>';
+    body.appendChild(div);
+  });
+  document.getElementById('trace-pip').classList.remove('active');
+  document.getElementById('agent-trace').classList.remove('open');
+  traceVisible=false;
+  document.getElementById('trace-toggle-label').textContent='show';
+}
+
+function setTraceStep(key,state,detail){
+  const icon=document.getElementById('ti-'+key);
+  const det=document.getElementById('td-'+key);
+  if(!icon)return;
+  icon.className='trace-icon ts-'+state;
+  if(state==='running'){icon.innerHTML='<div class="tdot" style="width:4px;height:4px;background:currentColor"></div>';}
+  else if(state==='done'){icon.textContent='ok';}
+  else if(state==='crisis'){icon.textContent='!';}
+  if(det&&detail) det.textContent=detail;
+  document.getElementById('trace-pip').classList.add('active');
+  if(!traceVisible){
+    document.getElementById('agent-trace').classList.add('open');
+    traceVisible=true;
+    document.getElementById('trace-toggle-label').textContent='hide';
+  }
+  document.getElementById('trace-body').scrollTop=99999;
+}
+
+function toggleTrace(){
+  const el=document.getElementById('agent-trace');
+  const lbl=document.getElementById('trace-toggle-label');
+  const alreadyOpen=el.classList.contains('open')&&traceVisible;
+  if(alreadyOpen){el.classList.remove('open');traceVisible=false;lbl.textContent='show';}
+  else{el.classList.add('open');traceVisible=true;lbl.textContent='hide';}
+}
+
+// ── ORCHESTRATOR ──────────────────────────────────────────────────────
+async function runAgents(userMessage){
+  initTrace();
+  chatLoading=true;document.getElementById('cp-send').disabled=true;
+
+  // Build role context string
+  let roleCtx='';
+  if(under18) roleCtx='User is under 18. Prioritize youth resources (Trevor Project, school counselors, Denver Health youth).';
+  if(currentRole==='auraria') roleCtx+=' User is an Auraria student (CU Denver/MSU Denver/CCD). Health Center at Auraria 303-615-9999 covers all three. SCCC 303-315-7270 is CU Denver only (10 free sessions).';
+  else if(currentRole==='faculty') roleCtx+=' User is CU faculty/staff. CSEAP 1-800-821-8154 is their primary free resource.';
+  else if(currentRole==='parent') roleCtx+=' User is a parent/family member seeking help for a loved one.';
+
+  try{
+    // AGENT 1: INTAKE
+    setTraceStep('intake','running','Analyzing your message...');
+    const intakeRaw=await callAgent('intake',userMessage,roleCtx);
+    console.log('Agent 1 raw response:',intakeRaw.slice(0,300));
+    const intake=parseJSON(intakeRaw);
+    let intakeData=intake;
+    if(!intakeData){
+      console.warn('Intake parse failed, using fallback. Raw:', intakeRaw.slice(0,100));
+      intakeData={urgency:'medium',isCrisis:false,topics:['general'],emotionalState:'seeking_info',needsImmediate:false,contextClues:[]};
+    }
+    const urgencyLabel=intakeData.urgency==='crisis'?'crisis':intake.urgency==='high'?'high urgency':'moderate';
+    setTraceStep('intake','done','Urgency: '+urgencyLabel+' | Topics: '+(intakeData.topics||[]).slice(0,3).join(', '));
+
+    // CRISIS CHECK
+    setTraceStep('crisis_check','running','Evaluating safety...');
+    if(intakeData.isCrisis||intakeData.needsImmediate){
+      setTraceStep('crisis_check','crisis','Crisis detected - routing to immediate support');
+      TRACE_STEPS.filter(s=>!['intake','crisis_check'].includes(s.key)).forEach(s=>setTraceStep(s.key,'done','Skipped - crisis route active'));
+      const crisisReply=await callAgent('crisis',userMessage,roleCtx);
+      addChatMsg('bot',crisisReply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'),true);
+      chatHistory.push({role:'user',content:userMessage},{role:'assistant',content:crisisReply});
+      chatLoading=false;document.getElementById('cp-send').disabled=false;
+      return;
+    }
+    setTraceStep('crisis_check','done','No immediate crisis - continuing to resource match');
+
+    // AGENT 2: RESOURCE MATCHER
+    setTraceStep('matcher','running','Searching Denver resource database...');
+    const eligibleResources=KB_RESOURCES.filter(r=>{
+      if(r.eligibility==='faculty'&&currentRole!=='faculty') return false;
+      if(r.eligibility==='auraria'&&currentRole!=='auraria'&&!['faculty'].includes(currentRole)) return true;
+      return true;
+    }).map(r=>r.name);
+    const matcherInput=JSON.stringify({situation:intakeData,availableResources:eligibleResources});
+    const matchRaw=await callAgent('matcher',matcherInput,roleCtx);
+    const match=parseJSON(matchRaw);
+    if(!match) throw new Error('Matcher parse failed');
+    setTraceStep('matcher','done','Matched: '+(match.selectedResources||[]).join(', '));
+
+    // AGENT 3: EXPLAINER
+    setTraceStep('explainer','running','Writing personalized reasons...');
+    const matchedDetails=KB_RESOURCES.filter(r=>match.selectedResources.includes(r.name)).map(r=>({name:r.name,desc:r.desc,contact:r.contact,cost:r.cost}));
+    const explainerInput=JSON.stringify({userSituation:intakeData,matchedResources:matchedDetails,roleContext:roleCtx});
+    const explainRaw=await callAgent('explainer',explainerInput);
+    const explain=parseJSON(explainRaw);
+    setTraceStep('explainer','done','Personalized '+(explain?Object.keys(explain.explanations||{}).length:0)+' resource(s)');
+
+    // AGENT 4: COMPOSER
+    setTraceStep('composer','running','Writing your reply...');
+    const composerInput=JSON.stringify({
+      originalMessage:userMessage,
+      intakeAnalysis:intakeData,
+      matchedResources:matchedDetails,
+      explanations:explain?explain.explanations:{},
+      matchReasoning:match.reasoning||''
+    });
+    const finalReply=await callAgent('composer',composerInput,roleCtx);
+    setTraceStep('composer','done','Reply ready');
+
+    chatHistory.push({role:'user',content:userMessage},{role:'assistant',content:finalReply});
+    addChatMsg('bot',finalReply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'),true);
+
+  }catch(err){
+    console.error('Agent error:',err);
+    try{
+      const fallback=await callAgent('composer',userMessage,'You are MindBridge. Respond warmly with 2-3 relevant Denver mental health resources. '+roleCtx);
+      addChatMsg('bot',fallback.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>'),true);
+    }catch(e){
+      addChatMsg('bot','Something went wrong. TELUS Health: 866-743-7732 (free, 24/7).',false);
+    }
+  }finally{
+    chatLoading=false;
+    document.getElementById('cp-send').disabled=false;
+  }
+}
+
+// ── CHAT HELPERS ──────────────────────────────────────────────────────
+const CHAT_SYS_BASE='';
+function getChatSystem(){return '';}
+function updateChatContext(){
+  const sub=document.getElementById('cp-sub');
+  if(under18) sub.textContent='Tailored for under 18 - Not a therapist';
+  else if(currentRole==='auraria') sub.textContent='Tailored for Auraria students';
+  else if(currentRole==='faculty') sub.textContent='Tailored for CU faculty & staff';
+  else if(currentRole) sub.textContent='Denver resource navigator';
+  else sub.textContent='4-agent AI system - Not a therapist';
+}
+
+function showKeyPrompt(){
+  // Proxy mode - no key needed, go straight to chat
+  submitApiKey();
+}
+
+function submitApiKey(){
+  apiKey='proxy';
+  document.getElementById('cp-key-prompt').style.display='none';
+  document.getElementById('cp-msgs').style.display='flex';
+  document.getElementById('cp-foot').style.display='flex';
+  let g='Hi, I\'m MindBridge.\n\nI\'m not a therapist - I\'m a 4-agent AI system that triages your situation, searches real Denver resources, and explains my reasoning step by step.\n\nWhat\'s going on for you?';
+  if(under18) g='Hi, I\'m MindBridge.\n\nI\'m here to help you find support. If you\'re in school, your school counselor is a great free first step. I can help find other options too.\n\nWhat\'s going on?';
+  else if(currentRole==='auraria') g='Hi, I\'m MindBridge.\n\nAs an Auraria student (CU Denver, MSU, or CCD), you have free access to the Health Center at Auraria. CU Denver students also get 10 free sessions at the SCCC.\n\nWhat\'s going on for you?';
+  else if(currentRole==='faculty') g='Hi, I\'m MindBridge.\n\nAs CU faculty or staff, CSEAP gives you free counseling at 1-800-821-8154.\n\nWhat\'s going on for you?';
+  addChatMsg('bot',g,false);
+}
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chat-panel').classList.toggle('open',chatOpen);
+  document.getElementById('fab').classList.toggle('open',chatOpen);
+  if(chatOpen&&!apiKey){showKeyPrompt();return;}
+  if(chatOpen&&chatHistory.length===0){
+    let g='Hi, I\'m MindBridge.\n\nI\'m a 4-agent AI system - I triage your situation, match resources, and explain my reasoning. Watch the "agent reasoning trace" below as I think through your question.\n\nWhat\'s going on for you?';
+    if(under18) g='Hi, I\'m MindBridge.\n\nI\'m here to help you find support. If you\'re in school, your school counselor is a great free first step.\n\nWhat\'s going on?';
+    else if(currentRole==='auraria') g='Hi, I\'m MindBridge.\n\nAs an Auraria student you have free access to the Health Center at Auraria. CU Denver students also get 10 free sessions at the SCCC.\n\nWhat\'s going on for you?';
+    else if(currentRole==='faculty') g='Hi, I\'m MindBridge.\n\nAs CU faculty or staff, CSEAP gives you free counseling at 1-800-821-8154.\n\nWhat\'s going on for you?';
+    addChatMsg('bot',g,false);
+  }
+}
+
+function addChatMsg(role,text,isHtml,contextPill){
+  document.getElementById('cp-quick').style.display='none';
+  const msgs=document.getElementById('cp-msgs');
+  const row=document.createElement('div');row.className='cm-row '+(role==='user'?'user':'bot');
+  const av=document.createElement('div');av.className='cm-av '+(role==='user'?'user':'bot');av.textContent=role==='user'?'U':'MB';
+  const wrap=document.createElement('div');wrap.style.cssText='display:flex;flex-direction:column;align-items:'+(role==='user'?'flex-end':'flex-start')+';max-width:84%';
+  if(contextPill){const pill=document.createElement('div');pill.className='cm-context-pill';pill.innerHTML='&ldquo;'+contextPill.slice(0,52)+(contextPill.length>52?'&hellip;':'')+'&rdquo;';wrap.appendChild(pill);}
+  const bub=document.createElement('div');bub.className='cm-bub '+(role==='user'?'user':'bot');
+  if(isHtml)bub.innerHTML=text;else bub.textContent=text;
+  wrap.appendChild(bub);row.appendChild(av);row.appendChild(wrap);msgs.appendChild(row);msgs.scrollTop=99999;
+}
+
+function addThinking(){
+  const msgs=document.getElementById('cp-msgs');
+  const row=document.createElement('div');row.className='cm-row bot';row.id='cp-thinking';
+  const av=document.createElement('div');av.className='cm-av bot';av.textContent='MB';
+  const bub=document.createElement('div');bub.className='cm-bub bot';
+  bub.innerHTML='<div class="thinking-dots"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>';
+  row.appendChild(av);row.appendChild(bub);msgs.appendChild(row);msgs.scrollTop=99999;
+}
+function removeThinking(){const el=document.getElementById('cp-thinking');if(el)el.remove();}
+
+async function sendChat(override){
+  if(chatLoading)return;
+  const inp=document.getElementById('cp-inp');const text=override||inp.value.trim();if(!text)return;
+  if(!override){inp.value='';inp.style.height='auto';}
+  addChatMsg('user',text,false);
+  await runAgents(text);
+}
+
+async function sendChatWithContext(highlighted,ctx){
+  if(chatLoading)return;
+  let label,prompt;
+  if(ctx==='community_post'){
+    label='Tell me more about resources for this';
+    prompt='Someone highlighted this from a community post: "'+highlighted+'"\n\nWhat Denver mental health resources could help with this specific situation or feeling?';
+  } else if(ctx==='resource'){
+    label='Tell me more about this resource';
+    prompt='Tell me more about this: "'+highlighted+'"\n\nHow do I access it, what should I expect, and who is it best for?';
+  } else {
+    label='What resources relate to this?';
+    prompt='Highlighted text: "'+highlighted+'"\n\nWhat Denver mental health resources could help here?';
+  }
+  addChatMsg('user',label,false,highlighted);
+  await runAgents(prompt);
+}
+
+function qs(text){if(!chatOpen)toggleChat();setTimeout(()=>sendChat(text),320);}
+
+document.getElementById('cp-inp').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,86)+'px';});
+document.getElementById('cp-inp').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}});
+document.getElementById('compose-ta').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px';});
+
+// ── INIT ──────────────────────────────────────────────────────────────
+renderVoices();renderFilters();renderResources();renderEvents();
+</script>
+</body>
+</html>

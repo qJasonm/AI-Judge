@@ -1,0 +1,30 @@
+Find local mental health, community, and public health resources and events in Denver, Colorado for anyone with personalized AI agents that help find personalized free/low cost resources for you!
+
+Inspiration
+Mental health resources exist in Denver, but many people never reach them. From a public health perspective, the challenge is not a lack of services but a breakdown in awareness and navigation. Students often turn to crisis hotlines simply because those are the only supports they recognize. The space between “I am struggling” and “I am in crisis” is where preventable harm occurs. A graduate student feeling isolated, a CCD student unaware that the Health Center at Auraria serves all three campuses, or a parent searching for affordable therapy for their teenager all have options available. They just do not know where to look or how to start. I built MindBridge because we experienced that gap ourselves. The resources were always there. What was missing was a bridge that made them visible and accessible to everyone.
+
+What it does
+MindBridge is a community platform and AI agent system that connects anyone in Denver to real, local mental health resources, personalized to who they are. You tell MindBridge what you're going through. A 4-agent AI pipeline triages your situation, searches a curated knowledge base of Denver resources, personalizes the recommendations to your specific context, and responds in warm plain language. The reasoning trace is visible in real time so you can watch each agent think. The platform also includes a community voices feed where Denver residents share experiences anonymously and connect through "me too" solidarity, a full resource directory spanning campus counseling, crisis lines, LGBTQ+ services, youth programs, and nationwide options with role-based eligibility highlighting, a live events board where anyone can submit local mental health events for admin review and approval, and a highlight-to-chat feature that lets you select any text on the page and ask the AI for resources related to exactly what you just read.
+
+How we built it
+The frontend is a single HTML, CSS, and JavaScript file with no frameworks, which keeps the app portable, easy to demo, and forces intentional design choices. The backend is a small Node.js server that sits between the browser and the Anthropic Claude API, storing the API key safely, handling CORS, and serving the app so it runs properly on localhost. The core of the system is a four‑agent pipeline built on the Anthropic Messages API. Agent 1 reads the user’s message and returns structured JSON with urgency, topics, emotional state, and context. Agent 2 uses that output to pick two or three relevant resources from our knowledge base. Agent 3 explains why each resource fits the user’s situation in a single sentence. Agent 4 turns everything into a human response. A crisis check runs after Agent 1, and if it detects crisis signals, the system skips the pipeline and sends an immediate emergency‑support response.
+
+Challenges we ran into
+Getting the agents to reliably return structured JSON was harder than expected. Large language models are trained to be helpful and conversational, which means they want to add context, caveats, and formatting even when you explicitly tell them not to. Agent 1 kept wrapping its JSON output in markdown fences or adding explanatory sentences before the object. We solved this by rewriting the system prompts to include concrete output examples and adding a resilient parser that finds the first and last curly brace in any response rather than assuming clean output.
+
+Accomplishments that we're proud of
+I am proud that the AI system is genuinely agentic. The agents hand structured data to each other where Agent 1 produces JSON that Agent 2 consumes, Agent 2's selections feed Agent 3's personalization, Agent 3's explanations feed Agent 4's composition. No agent just answers a question. Each one does a specific job in a reasoning pipeline that produces something none of them could produce alone.
+
+What we learned
+We learned that designing how an AI reasons is very different from designing what it says. Our first version, a single chatbot call, gave decent answers but had no structure, no reasoning trace, and no separation of concerns. Rebuilding it as a four‑agent pipeline forced us to define each step explicitly: what information each agent needs, what it produces, and how the next one uses it. That shift is what makes this an AI system rather than an app with AI added on top. We also learned that the most important design choices were about what to leave out, such as replies on community posts because anonymity matters more than engagement, complex authentication because friction stops people who already struggle to ask for help, and AI‑generated resource suggestions because in mental health contexts wrong information can cause real harm.
+
+What's next for MindBridge
+The most immediate next step is real geolocation. Right now the resource database is focused on Denver and the Auraria campus. With a zip code or location permission, MindBridge could pull resources from a live database and expand to any city in Colorado, then any city in the country. The agent architecture already supports this -- Agent 2 just needs a larger, location-aware knowledge base to search.
+
+Built with
+html
+css
+anthropic
+javascript
+node.js
+claude

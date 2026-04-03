@@ -1,0 +1,27 @@
+Automates NREL Smart Labs audits using n8n. It calculates risk-based ACH setpoints to safely slash university energy waste, turning 4-hour manual assessments into 10-second reports.
+
+Inspiration University labs are massive energy sinks. Most run at "worst-case scenario" ventilation rates 24/7, even when they’re empty or holding low-risk chemicals. Manually auditing these rooms takes hours of engineering time that facilities teams just don’t have. I wanted to automate the boring math so we can actually start saving energy.
+
+What it does The workflow collects chemical data, room dimensions, and trend data to run a deterministic risk assessment. Instead of guessing, it calculates the exact Air Changes per Hour (ACH) and volumetric flow (CFM) needed to stay safe while cutting unnecessary waste.
+
+How we built it I used n8n to coordinate the logic, with Azure OpenAI acting as the "brain" to interpret NREL safety standards and Gemini Vision for the image processing.
+
+RAG Pipeline: Searches a vector database of NREL toolkits and ANSI/ASHRAE standards to ensure every recommendation is code-compliant.
+
+Math Engine: Custom nodes handle the ACH-to-CFM conversions.
+
+Auto-Reporting: It finishes by generating a professional PDF memo ready for a facilities manager’s desk.
+
+Challenges we ran into Teaching an AI to respect strict engineering multipliers (like the 14x hazard weight) was tough. Early versions hallucinated "safe" numbers, so I had to build a rigid output parser to keep the math grounded in reality. Another challenge was being able to accurately image process a complex blueprint, as many things were in the way, but giving Gemini a more specific prompt enabled it to ignore obstructions
+
+Accomplishments that we're proud of I turned a 4-hour manual engineering audit into a 10-second automated process. Seeing the system cut over 1,300 CFM in a single room—while staying 100% safe—shows just how much "green" potential is hiding in our campus buildings.
+
+What we learned Low-code tools like n8n aren't just for simple tasks; they can run complex, regulated engineering workflows if you build the right guardrails.
+
+What's next I want to use this tool to do the whole science building, as it currently uses the most energy, and reducing it with n8n will save a lot of time. The goal is to move from static audits to a living, breathing, energy-efficient campus.
+
+Built with
+n8n
+gemini
+openai
+azure

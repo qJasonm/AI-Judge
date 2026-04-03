@@ -1,0 +1,1232 @@
+{
+  "name": "LVRA & Energy Optimization Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "id",
+          "value": "nrel_smart_labs_kb"
+        },
+        "clearStore": true
+      },
+      "id": "ec831427-545b-4159-91a3-991883d34d41",
+      "name": "Store NREL Knowledge Base",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b121de19-0ae2-4f8d-ae2d-a0d1f10551d5",
+      "name": "OpenAI Embeddings",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1872,
+        752
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "4rZ3mXx2TWGWfvFj",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Adding a fixed range of 50–150 CFM for Transfer Air (TA) is a common \"safety buffer\" in lab design. It ensures that even if the VAV (Variable Air Volume) boxes have a slight calibration error, the room remains under negative pressure.Here is the final, copy-paste ready prompt for your n8n Azure AI Agent.Role: Senior Mechanical Engineer and Lab Safety Auditor.Objective: Perform a deterministic LVRA assessment and calculate Supply Air (SA-F) requirements and Transfer Air (TA) recommendations.Input Variables:Room ID: {{ $json.room_id }}Room Volume: {{ $json.net_square_footage * 10 }} cubic feetCurrent Occupied SA-F: {{ $json.occ_SA_F }} CFMCurrent Unoccupied SA-F: {{ $json.unocc_SA_F }} CFMRatings (0-4): Hazard: {{ $json.exposure_limit }}, Generation: {{ $json.generation_rating }}, Vent Effectiveness: {{ $json.ventilation_effectiveness_rating }}, etc.Step 1: Weighted Score Calculation:Apply multipliers: Hazard (14), Generation (12), Vent Effectiveness (3), Quantity (2), Location (2), Dynamics (2), ECDs/Housekeeping (1).Step 2: Risk Control Band (RCB) Assignment:Sum scores and classify: <24 (LVDL 0), 25-52 (LVDL 1), 53-80 (LVDL 2), 81-108 (LVDL 3), >108 (LVDL 4).Step 3: Target ACH & SA-F Calculation:Calculate the New Target SA-F (CFM) using:$$CFM = \\frac{ACH \\times \\text{Volume}}{60}$$RCB 0: 2 Occ / 1 UnoccRCB 1: 4 Occ / 2 UnoccRCB 2: 6 Occ / 3 UnoccRCB 3: 8 Occ / 4 UnoccRCB 4: 12 Occ / 8 UnoccStep 4: Transfer Air (TA) Recommendation:To maintain secondary containment and negative pressure relative to the corridor, recommend a Transfer Air (TA) volume of 50–150 CFM. This offset ensures that Exhaust Air (EA-F) is consistently higher than Supply Air (SA-F) to prevent chemical migration.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a laboratory safety expert specializing in LVRA. Use the detailed LVRA rating rubric scores to determine LVDL classification. Higher LVRA scores indicate higher risk and require higher LVDL levels. Use the NREL Standards Search tool to find accurate ACH requirements."
+        }
+      },
+      "id": "c99cd5ad-d310-4ff1-bd40-cce4852bb94d",
+      "name": "Classify Lab LVDL",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1808,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Search the NREL Smart Labs Toolkit and ANSI/ASHRAE standards for laboratory ventilation design levels (LVDL), hazard classifications, and air change requirements",
+        "memoryKey": {
+          "__rl": true,
+          "mode": "id",
+          "value": "nrel_smart_labs_kb"
+        },
+        "topK": 5
+      },
+      "id": "ad15805b-829c-484f-8fa8-ccf8572262ac",
+      "name": "NREL Standards Search",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.3,
+      "position": [
+        1792,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"room_id\": \"{{ $json.room_id }}\",\n  \"total_lvra_score\": 0,\n  \"rcb_level\": 0,\n  \"lvdl\": 0,\n  \"target_ach_occ\": 0,\n  \"target_ach_unocc\": 0,\n  \"baseline_saf_occ_cfm\": \"{{ $json.occ_SA_F }}\",\n  \"target_saf_occ_cfm\": 0,\n  \"saf_delta_occ\": 0,\n  \"transfer_air_recommendation\": \"Maintain a negative pressure differential by providing 50–150 CFM of Transfer Air (TA) from the adjacent corridor.\",\n  \"justification\": \"string\"\n}"
+      },
+      "id": "177b46d7-6dbf-4387-8a35-7a599a5bc84d",
+      "name": "LVDL Classification Output",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2080,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "actual_ach_occupied",
+              "type": "number",
+              "value": "={{ (60 * $('Collect All Lab Data').item.json.occ_SA_F) / ($('Collect All Lab Data').item.json.net_square_footage * 10) }}"
+            },
+            {
+              "id": "2",
+              "name": "actual_ach_unoccupied",
+              "type": "number",
+              "value": "={{ (60 * $('Collect All Lab Data').item.json.unocc_SA_F/  ($('Collect All Lab Data').item.json.net_square_footage* 10)) }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "302e70ed-0bee-4c7d-8afa-9ab3b1707d32",
+      "name": "Calculate Actual ACH",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2288,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst saValues = items\n  .map((item) => {\n    // .replace(/,/g, '') removes all commas from the text\n    const rawValue = item?.json[\"608.1 \"]?.toString() || \"\";\n    return parseFloat(rawValue.replace(/,/g, ''));\n  })\n  .filter((value) => !isNaN(value));\n\nconst eaValues = items\n  .map((item) => {\n    const rawValue = item?.json[\"834.8 \"]?.toString() || \"\";\n    return parseFloat(rawValue.replace(/,/g, ''));\n  })\n  .filter((value) => !isNaN(value));\n\nconst occ_SA_F = Math.max(...saValues);\nconst unocc_SA_F = Math.min(...saValues);\nconst occ_EA_F = Math.max(...eaValues);\nconst unocc_EA_F = Math.min(...eaValues);\n\nreturn [{ json: { occ_SA_F, unocc_SA_F, occ_EA_F, unocc_EA_F } }];"
+      },
+      "id": "9d21bcf2-1d0d-4062-9d0c-217c253ae51c",
+      "name": "Process Trend Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "formTitle": "LVRA - Laboratory Ventilation Risk Assessment",
+        "formDescription": "Complete the LVRA rating rubric for laboratory hazard assessment",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Room ID",
+              "fieldName": "room_id",
+              "placeholder": "e.g., 2107",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Lab Type",
+              "fieldName": "lab_type",
+              "placeholder": "e.g., Chemistry, Biology, Physics",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Chemical Names",
+              "fieldType": "textarea",
+              "fieldName": "chemical_names",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Exposure Limit (ppm or mg/m³)",
+              "fieldType": "dropdown",
+              "fieldName": "exposure_limit",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "> 500 ppm or > 2000 mg/m³ (Rating 0)"
+                  },
+                  {
+                    "option": "300-500 ppm or 1000-2000 mg/m³ (Rating 1)"
+                  },
+                  {
+                    "option": "150-300 ppm or 500-1000 mg/m³ (Rating 2)"
+                  },
+                  {
+                    "option": "50-150 ppm or 300-500 mg/m³ (Rating 3)"
+                  },
+                  {
+                    "option": "< 50 ppm or < 300 mg/m³ (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Quantity (outside ECD)",
+              "fieldType": "dropdown",
+              "fieldName": "quantity_rating",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "None (Rating 0)"
+                  },
+                  {
+                    "option": "< 1 L or < 10 g (Rating 1)"
+                  },
+                  {
+                    "option": "1-10 L or 10-100 g (Rating 2)"
+                  },
+                  {
+                    "option": "10-20 L or 100-1000 g (Rating 3)"
+                  },
+                  {
+                    "option": "> 20 L or > 1000 g (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Generation Potential",
+              "fieldType": "dropdown",
+              "fieldName": "generation_rating",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "None (Rating 0)"
+                  },
+                  {
+                    "option": "< 0.1 lpm (evaporation / small # of small containers) (Rating 1)"
+                  },
+                  {
+                    "option": "< 0.3 lpm (high VP/stirring/small # of large containers) (Rating 2)"
+                  },
+                  {
+                    "option": "< 0.5 lpm (heat/mixing/large # of small containers) (Rating 3)"
+                  },
+                  {
+                    "option": "> 0.5 lpm (boiling/large # of large containers) (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Generation Method",
+              "fieldType": "dropdown",
+              "fieldName": "generation_method",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "None (Rating 0)"
+                  },
+                  {
+                    "option": "Manual (Rating 1)"
+                  },
+                  {
+                    "option": "Manual, intermittent Equipment, intermittent (Rating 2)"
+                  },
+                  {
+                    "option": "Equipment, constant Manual, equipment, intermittent Manual, equipment, constant (Rating 3)"
+                  },
+                  {
+                    "option": "Manual, equipment, intermittent, constant (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Generation Location",
+              "fieldType": "dropdown",
+              "fieldName": "generation_location",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "None (Rating 0)"
+                  },
+                  {
+                    "option": "Low (very close to capture device) (Rating 1)"
+                  },
+                  {
+                    "option": "Middle (close to capture device) (Rating 2)"
+                  },
+                  {
+                    "option": "Low-Middle or High-Middle (not very close) (Rating 3)"
+                  },
+                  {
+                    "option": "Low, Middle, High (not close) (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Change Dynamics - Frequency of Changes",
+              "fieldType": "dropdown",
+              "fieldName": "change_dynamics",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "1 change per decade (Rating 0)"
+                  },
+                  {
+                    "option": "1 change per year (Rating 1)"
+                  },
+                  {
+                    "option": "1 change per month (Rating 2)"
+                  },
+                  {
+                    "option": "1 change per week (Rating 3)"
+                  },
+                  {
+                    "option": "1 change per day (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Housekeeping Rating - Organization & Obstructions",
+              "fieldType": "dropdown",
+              "fieldName": "housekeeping_rating",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "No clutter (Rating 0)"
+                  },
+                  {
+                    "option": "Some Clutter (Rating 1)"
+                  },
+                  {
+                    "option": "Cluttered (Rating 2)"
+                  },
+                  {
+                    "option": "Very Cluttered (Rating 4)"
+                  },
+                  {
+                    "option": "Exceedingly Cluttered (Rating 5)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "ECD (Exposure Control Device) Available",
+              "fieldType": "dropdown",
+              "fieldName": "ecd_available",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes (Rating 0)"
+                  },
+                  {
+                    "option": "No (Rating 4)"
+                  },
+                  {
+                    "option": "N/A (Rating 1)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "ECD Appropriate",
+              "fieldType": "dropdown",
+              "fieldName": "ecd_appropriate",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Yes (Rating 0)"
+                  },
+                  {
+                    "option": "No (Rating 4)"
+                  },
+                  {
+                    "option": "N/A (Rating 1)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ventilation Effectiveness ",
+              "fieldType": "dropdown",
+              "fieldName": "ventilation_effectiveness_rating",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Very effective (Rating 0)"
+                  },
+                  {
+                    "option": "Effective (Rating 1)"
+                  },
+                  {
+                    "option": "Moderately effective (Rating 2)"
+                  },
+                  {
+                    "option": "Ineffective (Rating 3)"
+                  },
+                  {
+                    "option": "Very ineffective (Rating 4)"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Excel File with Trend Data",
+              "fieldType": "file",
+              "fieldName": "trendData",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "MEP Floor Plan (PDF/Image)",
+              "fieldType": "file",
+              "fieldName": "floorPlan",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Submit LVRA Assessment",
+          "respondWithOptions": {
+            "values": {
+              "formSubmittedText": "LVRA data submitted successfully! Calculating ratings..."
+            }
+          }
+        }
+      },
+      "id": "80dabd80-f3b3-469e-9cfb-bd2f1ad451c0",
+      "name": "Input Lab Details Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        400,
+        320
+      ],
+      "webhookId": "769ffc78-607d-421d-bae8-ffaefacc8325"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "id": "77387e8a-548a-496d-980c-19b269de8e8d",
+      "name": "Combine All Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1216,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "trendData",
+        "options": {
+          "delimiter": ",",
+          "fromLine": 13
+        }
+      },
+      "id": "c98b9cf6-1bb6-4c55-abd6-2d562a0b2557",
+      "name": "Extract Trend Data",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "room_id",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.room_id }}"
+            },
+            {
+              "id": "2",
+              "name": "lab_type",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.lab_type }}"
+            },
+            {
+              "id": "3",
+              "name": "chemical_names",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.chemical_names }}"
+            },
+            {
+              "id": "4",
+              "name": "exposure_limit",
+              "type": "string",
+              "value": "={{ $json.exposure_limit }}"
+            },
+            {
+              "id": "6",
+              "name": "quantity_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.quantity_rating }}"
+            },
+            {
+              "id": "7",
+              "name": "generation_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.generation_rating }}"
+            },
+            {
+              "id": "8",
+              "name": "generation_method",
+              "type": "string",
+              "value": "={{ $json.generation_method }}"
+            },
+            {
+              "id": "9",
+              "name": "generation_location",
+              "type": "string",
+              "value": "={{ $json.generation_location }}"
+            },
+            {
+              "id": "10",
+              "name": "change_dyanmics",
+              "type": "string",
+              "value": "={{ $json.change_dynamics }}"
+            },
+            {
+              "id": "13",
+              "name": "housekeeping_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.housekeeping_rating }}"
+            },
+            {
+              "id": "14",
+              "name": "ecd_available",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.ecd_available }}"
+            },
+            {
+              "id": "15",
+              "name": "ecd_appropriate",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.ecd_appropriate }}"
+            },
+            {
+              "id": "16",
+              "name": "ventilation_effectiveness_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.ventilation_effectiveness_rating }}"
+            },
+            {
+              "id": "17",
+              "name": "net_square_footage",
+              "type": "number",
+              "value": "={{ $json.content.parts[0].text }}"
+            },
+            {
+              "id": "18",
+              "name": "unocc_SA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.unocc_SA_F }}"
+            },
+            {
+              "id": "19",
+              "name": "occ_SA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.occ_SA_F }}"
+            },
+            {
+              "id": "20",
+              "name": "unocc_EA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.unocc_EA_F }}"
+            },
+            {
+              "id": "21",
+              "name": "occ_EA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.occ_EA_F }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3f092a0b-9b31-4d93-8033-bba470d60fd4",
+      "name": "Collect All Lab Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "ca9e8464-6540-46d5-87b8-9ace1e059b02",
+      "name": "Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        928,
+        1344
+      ]
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "673ba86b-57ce-4530-a6a2-3970b9cc3317",
+      "name": "PDF Document Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1N0Y0QxtptjnDGnF1Nzr-9GEdeakiOKEc",
+            "mode": "list",
+            "cachedResultName": "LVRA_Project_Data",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1N0Y0QxtptjnDGnF1Nzr-9GEdeakiOKEc"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        400,
+        912
+      ],
+      "id": "f84c356b-b3a3-45f3-93b7-e59578c72717",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "PHcnfW4JTyLFSIkJ",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        624,
+        912
+      ],
+      "id": "c4456f39-da8a-4252-8149-3d98fe0ad5b9",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "PHcnfW4JTyLFSIkJ",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "=Role: Professional Mechanical Engineer and Lab Safety Auditor.Task: Forensic Dimension Extraction of Room {{ $('Input Lab Details Form').item.json.room_id }}.Critical Boundary Instruction:Ignore Internal Objects: Do not calculate based on the size of lab desks, tables, or equipment. These are sub-elements and will lead to underestimation.Locate the Structural Shell: Trace the thickest architectural lines that define the room's perimeter.Find the \"Master\" Dimensions: Look for the dimension strings that span the entire length and width of the room. These are often located just outside the wall lines or at the very ends of the room (e.g., $40' \\text{-} 6\"$ and $32' \\text{-} 0\"$).Visual Calibration:Use the 1/8\" = 1'-0\" scale at the bottom of the sheet to verify that your identified length is approximately 40 feet.If your math results in an area under 1,000 $ft^2$, you have failed the task—re-scan for the wider structural walls.Strict Output Requirement:Return ONLY the final net square footage as a plain number. No units, no text, no explanation.",
+        "inputType": "binary",
+        "binaryPropertyName": "floorPlan",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        320
+      ],
+      "id": "4d19336b-894a-456a-892d-776293b0b4be",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mYi2qM0ZxJ1p1rpO",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        544
+      ],
+      "id": "41c1dabb-99a6-4de3-a050-5a865724e716",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "tKasN0ZTrhIbgHvu",
+          "name": "Azure Open AI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "room_id",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.room_id }}"
+            },
+            {
+              "id": "2",
+              "name": "lab_type",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.lab_type }}"
+            },
+            {
+              "id": "3",
+              "name": "chemical_names",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.chemical_names }}"
+            },
+            {
+              "id": "4",
+              "name": "exposure_limit",
+              "type": "string",
+              "value": "={{ $('Collect All Lab Data').item.json.exposure_limit }}"
+            },
+            {
+              "id": "6",
+              "name": "quantity_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.quantity_rating }}"
+            },
+            {
+              "id": "7",
+              "name": "generation_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.generation_rating }}"
+            },
+            {
+              "id": "8",
+              "name": "generation_method",
+              "type": "string",
+              "value": "={{ $('Collect All Lab Data').item.json.generation_method }}"
+            },
+            {
+              "id": "10",
+              "name": "generation_location",
+              "type": "string",
+              "value": "={{ $('Collect All Lab Data').item.json.generation_location }}"
+            },
+            {
+              "id": "11",
+              "name": "change_dynamics",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.change_dynamics }}"
+            },
+            {
+              "id": "13",
+              "name": "housekeeping_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.housekeeping_rating }}"
+            },
+            {
+              "id": "14",
+              "name": "ecd_available",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.ecd_available }}"
+            },
+            {
+              "id": "15",
+              "name": "ecd_appropriate",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.ecd_appropriate }}"
+            },
+            {
+              "id": "16",
+              "name": "ventilation_effectiveness_rating",
+              "type": "string",
+              "value": "={{ $(\"Combine All Data\").item.json.ventilation_effectiveness_rating }}"
+            },
+            {
+              "id": "17",
+              "name": "net_square_footage",
+              "type": "number",
+              "value": "={{ $('Collect All Lab Data').item.json.net_square_footage }}"
+            },
+            {
+              "id": "18",
+              "name": "unocc_SA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.unocc_SA_F }}"
+            },
+            {
+              "id": "19",
+              "name": "occ_SA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.occ_SA_F }}"
+            },
+            {
+              "id": "20",
+              "name": "unocc_EA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.unocc_EA_F }}"
+            },
+            {
+              "id": "21",
+              "name": "occ_EA_F",
+              "type": "number",
+              "value": "={{ $(\"Combine All Data\").item.json.occ_EA_F }}"
+            },
+            {
+              "id": "70bcde90-44e0-442b-9f84-916f482d3fdf",
+              "name": "actual_ach_occupied",
+              "value": "={{ $json.actual_ach_occupied }}",
+              "type": "number"
+            },
+            {
+              "id": "1f6e2d6c-f395-4859-8e83-9b5bb06d2ba5",
+              "name": "actual_ach_unoccupied",
+              "value": "={{ $json.actual_ach_unoccupied }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1b8c0bd-3f54-4f5f-92b4-beff4242c042",
+      "name": "Collect All Lab Data1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2512,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=System Role: Senior Mechanical Engineer and Lab Safety Auditor.\n\nObjective: Generate a formal Laboratory Ventilation Audit Report for Room {{ $json.room_id }}.\n\nAudit Context:\nThe Lab Type is {{ $json.lab_type }} with a Chemical Inventory of {{ $json.chemical_names }}. The calculated Room Volume is {{ $json.net_square_footage * 10 }} cubic feet.\n\nBaseline Ventilation State (Pre-Audit):\nThe current Occupied state is {{ $('Calculate Actual ACH').item.json.actual_ach_occupied }} ACH, which equates to {{ $json.occ_SA_F }} CFM. The current Unoccupied state is {{ $('Calculate Actual ACH').item.json.actual_ach_unoccupied }} ACH, which equates to {{ $json.unocc_SA_F }} CFM.\n\nLVRA Categorization (Post-Audit):\nThe assessment resulted in a Total LVRA Score of {{ $('Classify Lab LVDL').item.json.output.total_lvra_score }} and an LVDL Classification of LVDL {{ $('Classify Lab LVDL').item.json.output.lvdl }}. The target ventilation setpoints are {{ $('Classify Lab LVDL').item.json.output.target_ach_occ }} ACH for Occupied and {{ $('Classify Lab LVDL').item.json.output.target_ach_unocc }} ACH for Unoccupied.\n\nVolumetric Flow Calculations:\nCalculate and explicitly state the following values in the report based on Room Volume:\n\nNew Target Occupied CFM: (Target ACH * Volume) / 60\n\nNew Target Unoccupied CFM: (Target ACH * Volume) / 60\n\nNet Supply Air (SA-F) Reduction: [Baseline CFM] - [New Target CFM]\n\nReport Requirements:\nWrite a structured report using formal Markdown headers. Do not use bullet points or numbered lists within the sections. Use professional, technical prose for the following areas:\n\nEXECUTIVE SUMMARY\nDetail the discrepancy between the legacy airflow of {{ $json.occ_SA_F }} CFM and the data-driven requirements established by this audit.\n\nSAFETY JUSTIFICATION\nExplain how the Hazard Rating of {{ $json.exposure_limit }}/4 and the Generation Rate of {{ $json.generation_rating }}/4—weighted at 14x and 12x respectively—support the LVDL {{ $('Classify Lab LVDL').item.json.output.lvdl }} classification per NREL Smart Labs methodology.\n\nOPERATIONAL IMPACT\nAddress why the previous baseline was over-engineered and describe how the revised setpoints maintain safety while eliminating unnecessary air changes.\n\nAIRFLOW AND PRESSURIZATION\nProvide a firm recommendation for a Transfer Air (TA) volume of 50–150 CFM from the corridor. Explain how this ensures negative pressure and secondary containment.\n\nENERGY ROI\nQuantify the reduction in volumetric flow and explain how this decreases fan energy consumption and building reheat demand.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a laboratory energy efficiency consultant specializing in LVRA methodology. Write clear, concise reports that explain technical ventilation changes to facility managers. Focus on: (1) quantifying energy savings from ACH reduction, (2) explaining how LVRA ratings justify the lower classification, (3) emphasizing that safety is maintained while reducing energy waste. Use specific LVRA rating scores to support your reasoning."
+        }
+      },
+      "id": "88bd8535-c653-4566-9b7c-e6c4306a6d30",
+      "name": "Generate ACH Report",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2736,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {}
+      },
+      "id": "57367c87-7b8b-4fe4-afe6-a9ebd965bb29",
+      "name": "Azure OpenAI Chat Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        544
+      ],
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "tKasN0ZTrhIbgHvu",
+          "name": "Azure Open AI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\n\"report_title\": \"ACH Optimization Report - Room 2107\",\n\n\"before_ach_occupied\": 15.2,\n\n\"before_ach_unoccupied\": 8.5,\n\n\"after_ach_occupied\": 12,\n\n\"after_ach_unoccupied\": 6,\n\n\"energy_savings_explanation\": \"By reducing occupied ACH from 15.2 to 12 and unoccupied from 8.5 to 6, we reduce fan energy consumption by approximately 20%, saving an estimated 15,000 kWh annually.\",\n\n\"safety_justification\": \"The LVRA assessment shows low hazard ratings with good housekeeping and effective ventilation, resulting in a total LVRA score of 12. This justifies LVDL 2 classification requiring only 12 ACH occupied and 6 ACH unoccupied, maintaining safety while eliminating over-ventilation.\",\n\n\"lvdl_classification_reasoning\": \"The previous LVDL 3 classification was overly conservative. The actual chemical usage, minimal generation rates, and presence of appropriate fume hoods mean the room does not require the higher ventilation rates of LVDL 3. The LVRA methodology confirms LVDL 2 is appropriate and safe.\"\n\n} "
+      },
+      "id": "45a52e19-a2d2-4003-98ab-a78be627788c",
+      "name": "Report Structure Output",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2880,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n<style>\n    body { font-family: 'Helvetica', 'Arial', sans-serif; line-height: 1.6; color: #333; margin: 40px; }\n    .header { border-bottom: 2px solid #4A90E2; padding-bottom: 10px; margin-bottom: 30px; }\n    h1 { color: #1A365D; margin-bottom: 5px; font-size: 24px; }\n    .meta { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }\n    \n    .section { margin-bottom: 25px; }\n    .section-title { font-weight: bold; color: #2D3748; border-left: 4px solid #4A90E2; padding-left: 10px; margin-bottom: 10px; font-size: 18px; }\n    \n    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; background: #F7FAFC; padding: 15px; border-radius: 8px; }\n    .stat-item { font-size: 14px; }\n    .stat-label { font-weight: bold; color: #4A5568; }\n    \n    .justification { font-style: italic; background: #EDF2F7; padding: 15px; border-radius: 5px; }\n    .footer { margin-top: 50px; font-size: 10px; text-align: center; color: #A0AEC0; border-top: 1px solid #E2E8F0; padding-top: 10px; }\n</style>\n</head>\n<body>\n\n    <div class=\"header\">\n        <h1>{{ $json.output.report_title }}</h1>\n        <div class=\"meta\">Ventilation Optimization & Safety Assessment Report</div>\n    </div>\n\n    <div class=\"stats-grid\">\n        <div class=\"stat-item\">\n            <span class=\"stat-label\">Occupied ACH (Before/After):</span><br>\n            {{ $json.output.before_ach_occupied }} / {{ $json.output.after_ach_occupied }}\n        </div>\n        <div class=\"stat-item\">\n            <span class=\"stat-label\">Unoccupied ACH (Before/After):</span><br>\n           {{ $json.output.before_ach_unoccupied }} / {{ $json.output.after_ach_unoccupied }}\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <div class=\"section-title\">Energy Savings Analysis</div>\n        <p>{{ $json.output.energy_savings_explanation }}</p>\n    </div>\n\n    <div class=\"section\">\n        <div class=\"section-title\">Safety Justification</div>\n        <div class=\"justification\">\n            {{ $json.output.safety_justification }}\n        </div>\n    </div>\n\n    <div class=\"section\">\n        <div class=\"section-title\">LVDL Classification Reasoning</div>\n        <p>{{ $json.output.lvdl_classification_reasoning }}</p>\n    </div>\n\n    <div class=\"footer\">\n        Generated via n8n Automation System • Confidential Internal Report\n    </div>\n\n</body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        3088,
+        320
+      ],
+      "id": "adc17eb8-6ff6-4bbc-bf86-7bdc8032d93c",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "html_content": "={{ $json.html }}",
+        "output_format": "file",
+        "output_filename": "=Report_{{ $json.reporttitle.replace(/\\s+/g, '') }}_{{ new Date().toISOString().split('T')[0] }}.pdf"
+      },
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "typeVersion": 1,
+      "position": [
+        3312,
+        320
+      ],
+      "id": "9be53c88-da01-45a1-9dc1-69e66f6e27bf",
+      "name": "Convert HTML to PDF",
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "or0TWCK1xdj4xUIs",
+          "name": "HTML to PDF account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Search files and folders": [
+      {
+        "json": {
+          "id": "1SEz7wRHWaVr1UH68PC2dJplZSFT0h4wA",
+          "name": "ASHRAE+62.1-2022+(1).pdf"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "19L6BYIMwzLJ8X4Z8BoLLnxqgHRI0eeFO",
+          "name": "lvra-user-guide.pdf"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store NREL Knowledge Base",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "NREL Standards Search",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Lab LVDL": {
+      "main": [
+        [
+          {
+            "node": "Calculate Actual ACH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NREL Standards Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Classify Lab LVDL",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LVDL Classification Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Classify Lab LVDL",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Actual ACH": {
+      "main": [
+        [
+          {
+            "node": "Collect All Lab Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Trend Data": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Input Lab Details Form": {
+      "main": [
+        [
+          {
+            "node": "Extract Trend Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Combine All Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine All Data": {
+      "main": [
+        [
+          {
+            "node": "Collect All Lab Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Trend Data": {
+      "main": [
+        [
+          {
+            "node": "Process Trend Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Lab Data": {
+      "main": [
+        [
+          {
+            "node": "Classify Lab LVDL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "PDF Document Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Store NREL Knowledge Base",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Store NREL Knowledge Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Combine All Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Classify Lab LVDL",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Lab Data1": {
+      "main": [
+        [
+          {
+            "node": "Generate ACH Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate ACH Report",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report Structure Output": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate ACH Report",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate ACH Report": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF": {
+      "main": [
+        []
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "276de4f3-f2ef-4242-a79a-59982495a372",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "68391ebb3968dfaf588b92e634ab17af5ba5073338378f157f98e49883e14091"
+  },
+  "id": "n4cpq1coB7eqdDQm",
+  "tags": []
+}

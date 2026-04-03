@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetGotchi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #12121a;
+    --border: #2a2a3e;
+    --green: #00ff88;
+    --yellow: #ffd700;
+    --red: #ff4466;
+    --blue: #4488ff;
+    --purple: #aa44ff;
+    --text: #c8c8d8;
+    --dim: #555566;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  .pixel-border {
+    border: 3px solid var(--border);
+    box-shadow: 0 0 0 1px var(--bg), 0 0 20px rgba(68,136,255,0.1);
+  }
+
+  header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--green);
+    text-shadow: 0 0 10px rgba(0,255,136,0.5);
+  }
+  .streak-badge {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    background: var(--panel);
+    border: 2px solid var(--yellow);
+    color: var(--yellow);
+    padding: 6px 10px;
+  }
+
+  .pet-screen {
+    width: 100%;
+    max-width: 480px;
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 32px 24px;
+    margin-bottom: 16px;
+    text-align: center;
+    position: relative;
+  }
+  .pet-screen::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(255,255,255,0.03);
+    pointer-events: none;
+  }
+
+  .pet-sprite {
+    font-size: 80px;
+    display: block;
+    margin: 0 auto 16px;
+    animation: float 3s ease-in-out infinite;
+    line-height: 1;
+    image-rendering: pixelated;
+  }
+  .pet-sprite.sad { animation: shake 0.5s ease-in-out infinite; }
+  .pet-sprite.dead { animation: none; filter: grayscale(1); opacity: 0.5; }
+
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  .pet-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .pet-stage {
+    font-size: 16px;
+    color: var(--dim);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .pet-message {
+    background: rgba(68,136,255,0.08);
+    border: 1px solid rgba(68,136,255,0.2);
+    padding: 12px 16px;
+    font-size: 18px;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .pet-message::before {
+    content: '▶ ';
+    color: var(--blue);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--dim);
+    display: block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .stat-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+  .stat-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+  }
+  .stat-fill.health { background: var(--green); }
+  .stat-fill.happiness { background: var(--yellow); }
+  .stat-fill.hunger { background: var(--blue); }
+  .stat-val {
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .today-done {
+    background: rgba(0,255,136,0.08);
+    border: 2px solid var(--green);
+    color: var(--green);
+    padding: 14px;
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    padding: 18px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn:active { transform: translateY(2px); }
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+    box-shadow: 0 4px 0 #00aa55, 0 0 20px rgba(0,255,136,0.3);
+  }
+  .btn-primary:hover { box-shadow: 0 4px 0 #00aa55, 0 0 30px rgba(0,255,136,0.5); }
+  .btn-danger {
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 4px 0 #aa0022;
+  }
+  .btn-disabled {
+    background: var(--dim);
+    color: #000;
+    cursor: not-allowed;
+    box-shadow: 0 4px 0 #333344;
+  }
+
+  .history-link {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 16px;
+    color: var(--dim);
+  }
+  .history-link a { color: var(--blue); text-decoration: none; }
+  .history-link a:hover { color: var(--green); }
+
+  .scanline {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
+    z-index: 100;
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<header>
+  <div class="logo">LeetGotchi</div>
+  <div class="streak-badge">🔥 {{ pet.streak }} DAY STREAK</div>
+</header>
+
+<div class="pet-screen pixel-border">
+  {% set sprites = {
+    'egg': '🥚', 'baby': '🐣', 'teen': '🐥',
+    'adult': '🐦', 'dragon': '🐲', 'legend': '🦄'
+  } %}
+  {% set sprite_class = 'dead' if not pet.is_alive else ('sad' if pet.health < 30 else '') %}
+
+  <span class="pet-sprite {{ sprite_class }}">
+    {{ sprites.get(pet.stage, '🥚') if pet.is_alive else '💀' }}
+  </span>
+
+  <div class="pet-name">{{ pet.name }}</div>
+  <div class="pet-stage">{{ pet.stage }} · age {{ ((pet.streak // 7) + 1) }}</div>
+
+  <div class="pet-message">{{ pet_message }}</div>
+
+  <div class="stats-grid">
+    <div class="stat">
+      <span class="stat-label">HP</span>
+      <div class="stat-bar"><div class="stat-fill health" style="width:{{ pet.health }}%"></div></div>
+      <span class="stat-val">{{ pet.health }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Happy</span>
+      <div class="stat-bar"><div class="stat-fill happiness" style="width:{{ pet.happiness }}%"></div></div>
+      <span class="stat-val">{{ pet.happiness }}</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Hunger</span>
+      <div class="stat-bar"><div class="stat-fill hunger" style="width:{{ pet.hunger }}%"></div></div>
+      <span class="stat-val">{{ pet.hunger }}</span>
+    </div>
+  </div>
+</div>
+
+{% if false %}
+  <div class="today-done">
+    ✅ TODAY'S PROBLEM COMPLETE<br>
+    {{ today_session.leetcode_title }}<br>
+    Score: {{ today_session.honesty_score }}/100
+  </div>
+  <a class="btn btn-disabled" style="max-width:480px;">COME BACK TOMORROW</a>
+{% elif not pet.is_alive %}
+  <a class="btn btn-danger" href="/reset" style="max-width:480px;">REVIVE PET (RESET)</a>
+{% else %}
+  <a class="btn btn-primary" href="/challenge">START TODAY'S PROBLEM</a>
+{% endif %}
+
+<div class="history-link">
+  <a href="/history">view session history →</a>
+</div>
+
+</body>
+</html>

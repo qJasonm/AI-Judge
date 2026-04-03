@@ -1,0 +1,28 @@
+Inspiration
+I wanted to hold myself accountable for actually learning data structures and algorithms — not just copying solutions and moving on. I also wanted to make the process fun. That's where the idea came from: what if my study habit was tied to something I could lose? A pet that dies if I cheat felt like the perfect motivation.
+
+What it does
+LeetGotchi is a virtual pet that only stays alive if you honestly solve one LeetCode problem a day. You can't just paste a solution — you have to explain the problem in your own words, describe your approach, write your code, explain the time complexity, and reflect on what you learned. You also have to spend at least 30 minutes on it. When you submit, a Gemini AI agent reads everything you wrote and scores your honesty. It even asks you a follow-up question to test if you really understood. If you did the work, your pet grows and evolves. If you cheat or skip a day, your pet loses health and eventually dies.
+
+How I built it
+Flask + SQLite for the backend and database
+Vanilla HTML, CSS, and JavaScript for the frontend
+Google Gemini API as the AI honesty evaluation agent
+Python subprocess for the live code runner that executes test cases in the browser
+Challenges I ran into
+Getting the AI agent to reliably return structured JSON scores was tricky. I also had to design the anti-cheat system carefully — it needed to feel fair but strict enough to actually enforce honest effort.
+
+What I learned
+How to build an agentic AI system where the AI doesn't just generate text but actively evaluates, judges, and influences the state of an application. I also learned how much more you understand a problem when you're forced to explain it out loud.
+
+What's next
+Daily health drain so the pet gets sick overnight if you skip, leaderboards for streaks, and support for more languages beyond Python.
+
+Built with
+python
+html5
+css
+gemini
+flask
+sqlite
+javascript

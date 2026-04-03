@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kinetic MotionAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              background: 'var(--background)',
+              surface: 'var(--surface)',
+              primary: '#f97316', // Orange 500 (Vibrant Energy)
+              secondary: '#14b8a6', // Teal 500 (Balance/Health)
+              danger: '#ef4444', // Red 500
+              accent: '#84cc16', // Lime 500 (Performance)
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            animation: {
+              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'scan': 'scan 2s linear infinite',
+            },
+            keyframes: {
+              scan: {
+                '0%': { top: '0%' },
+                '100%': { top: '100%' },
+              }
+            }
+          },
+        },
+      };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --background: #f4f4f5; /* Zinc 100 - Light Mode */
+        --surface: #ffffff;    /* White - Light Mode */
+      }
+      .dark {
+        --background: #09090b; /* Zinc 950 - Dark Mode */
+        --surface: #18181b;    /* Zinc 900 - Dark Mode */
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--background);
+        color: #18181b; /* Default text dark for light mode */
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .dark body {
+        color: #f4f4f5; /* Light text for dark mode */
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+      }
+      .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+      }
+      .neon-glow {
+        box-shadow: 0 0 15px rgba(217, 70, 239, 0.6); /* Fuchsia Glow */
+      }
+      .grid-bg {
+        background-image: linear-gradient(to right, #27272a 1px, transparent 1px),
+                          linear-gradient(to bottom, #27272a 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: linear-gradient(to bottom, transparent, 10%, black, 90%, transparent);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.564.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/"
+  }
+}
+</script>
+<!-- MediaPipe Pose for Live Skeleton Tracking -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

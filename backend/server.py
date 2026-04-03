@@ -152,7 +152,7 @@ def handle_extract_video():
     
     try:
         uploaded.save(temp_path)
-        result = extract_video(video_path=temp_path, interval_sec=5)
+        result = extract_video(video_path=temp_path, interval_sec=10)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": f"Video extraction failed: {str(e)}"}), 500

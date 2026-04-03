@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetGotchi – Daily Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --panel: #12121a;
+    --border: #2a2a3e;
+    --green: #00ff88;
+    --yellow: #ffd700;
+    --red: #ff4466;
+    --blue: #4488ff;
+    --purple: #aa44ff;
+    --text: #c8c8d8;
+    --dim: #555566;
+    --orange: #ff8844;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    min-height: 100vh;
+    padding: 20px 16px 40px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 720px;
+    margin: 0 auto 24px;
+  }
+  .logo {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: var(--green);
+    text-decoration: none;
+    text-shadow: 0 0 10px rgba(0,255,136,0.4);
+  }
+
+  /* ── timer ── */
+  .timer-box {
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 12px 20px;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 20px;
+  }
+  .timer-label {
+    font-size: 14px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  #timer-display {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 28px;
+    color: var(--green);
+    text-shadow: 0 0 15px rgba(0,255,136,0.5);
+    transition: color 0.3s;
+  }
+  #timer-display.warning { color: var(--yellow); text-shadow: 0 0 15px rgba(255,215,0,0.5); }
+  #timer-display.danger  { color: var(--red);    text-shadow: 0 0 15px rgba(255,68,102,0.5); }
+  .timer-bar-wrap {
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  #timer-bar {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 1s linear, background 0.3s;
+  }
+  .timer-hint {
+    font-size: 14px;
+    color: var(--dim);
+    margin-top: 6px;
+  }
+
+  /* ── form sections ── */
+  .form-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section {
+    background: var(--panel);
+    border: 2px solid var(--border);
+    padding: 20px;
+  }
+  .section.locked {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--blue);
+    letter-spacing: 1px;
+  }
+  .section-badge {
+    font-size: 13px;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+  }
+  .section-badge.required { border-color: var(--orange); color: var(--orange); }
+
+  label {
+    display: block;
+    font-size: 15px;
+    color: var(--dim);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  input[type="text"], input[type="url"], select, textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 1px rgba(68,136,255,0.2);
+  }
+  select option { background: var(--panel); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  .char-count {
+    text-align: right;
+    font-size: 13px;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+  .char-count.ok { color: var(--green); }
+
+  .row-2 { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+
+  .btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 14px 20px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+  }
+  .btn:active { transform: translateY(2px); }
+  .btn-start {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 4px 0 #1133aa;
+    width: 100%;
+  }
+  .btn-submit {
+    background: var(--green);
+    color: #000;
+    box-shadow: 0 4px 0 #00aa55, 0 0 20px rgba(0,255,136,0.3);
+    width: 100%;
+  }
+  .btn-submit:disabled {
+    background: var(--dim);
+    color: #000;
+    cursor: not-allowed;
+    box-shadow: 0 4px 0 #333;
+  }
+
+  /* ── result overlay ── */
+  #result-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  #result-overlay.show { display: flex; }
+  .result-box {
+    background: var(--panel);
+    border: 3px solid var(--border);
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+  }
+  .result-box.accepted { border-color: var(--green); }
+  .result-box.rejected { border-color: var(--red); }
+  .result-emoji { font-size: 60px; margin-bottom: 16px; display: block; }
+  .result-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .result-title.accepted { color: var(--green); }
+  .result-title.rejected { color: var(--red); }
+  .result-score {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 22px;
+    color: var(--yellow);
+    margin-bottom: 16px;
+  }
+  .result-reasoning {
+    font-size: 17px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+  .followup-section {
+    background: rgba(170,68,255,0.08);
+    border: 1px solid rgba(170,68,255,0.3);
+    padding: 16px;
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .followup-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--purple);
+    margin-bottom: 8px;
+  }
+  .followup-q { font-size: 17px; color: var(--text); margin-bottom: 10px; }
+  .followup-input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(170,68,255,0.4);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 17px;
+    padding: 8px 10px;
+    outline: none;
+    resize: vertical;
+    min-height: 70px;
+  }
+
+  .scanline {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+    );
+    z-index: 100;
+  }
+  .pet-mini { font-size: 28px; }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<header>
+  <a class="logo" href="/">← LeetGotchi</a>
+  <span class="pet-mini" id="pet-mini">🥚</span>
+</header>
+
+<!-- Timer -->
+<div class="timer-box">
+  <div class="timer-label">time on task</div>
+  <div id="timer-display">00:00:00</div>
+  <div class="timer-bar-wrap"><div id="timer-bar"></div></div>
+  <div class="timer-hint" id="timer-hint">Start a problem to begin the timer</div>
+</div>
+
+<div class="form-wrap">
+
+  <!-- Section 1: Problem setup -->
+  <div class="section" id="section-setup">
+    <div class="section-header">
+      <span class="section-title">01 · Problem Setup</span>
+      <span class="section-badge required">START HERE</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div>
+        <label>Problem title</label>
+        <input type="text" id="lc-title" placeholder="e.g. Two Sum" />
+      </div>
+      <div>
+        <label>Difficulty</label>
+        <select id="lc-difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+    </div>
+    <label>LeetCode URL</label>
+    <div class="row-2">
+      <input type="url" id="lc-link" placeholder="https://leetcode.com/problems/..." />
+      <button class="btn btn-start" id="btn-start" onclick="startSession()">START</button>
+    </div>
+  </div>
+
+  <!-- Section 2: Explain the problem (unlocks after start) -->
+  <div class="section locked" id="section-explain">
+    <div class="section-header">
+      <span class="section-title">02 · Explain The Problem</span>
+      <span class="section-badge required">REQUIRED</span>
+    </div>
+    <label>What is this problem asking you to do? (your own words)</label>
+    <textarea id="problem-explanation" placeholder="Describe the problem, inputs, outputs, and any constraints..."></textarea>
+    <div class="char-count" id="cc-explain">0 chars</div>
+  </div>
+
+  <!-- Section 3: Approach -->
+  <div class="section locked" id="section-approach">
+    <div class="section-header">
+      <span class="section-title">03 · Your Approach</span>
+      <span class="section-badge required">REQUIRED</span>
+    </div>
+    <label>How are you planning to solve this? (before coding)</label>
+    <textarea id="approach-explanation" placeholder="Describe your strategy, data structures you'll use, why you chose this approach..."></textarea>
+    <div class="char-count" id="cc-approach">0 chars</div>
+  </div>
+
+  <!-- Section 4: Solution + Code Runner -->
+  <div class="section locked" id="section-solution">
+    <div class="section-header">
+      <span class="section-title">04 · Your Solution</span>
+      <span class="section-badge" style="border-color:var(--green);color:var(--green)">PYTHON 3 RUNNER</span>
+    </div>
+    <label>Write your solution (class named Solution)</label>
+    <textarea id="solution-text" style="font-family:'JetBrains Mono',monospace;font-size:14px;min-height:180px;" placeholder="class Solution:&#10;    def twoSum(self, nums, target):&#10;        seen = {}&#10;        for i, num in enumerate(nums):&#10;            complement = target - num&#10;            if complement in seen:&#10;                return [seen[complement], i]&#10;            seen[num] = i"></textarea>
+    <label style="margin-top:14px;">Test cases (one per line)</label>
+    <div style="font-size:13px;color:var(--dim);margin-bottom:6px;font-family:'JetBrains Mono',monospace;">Format: Solution().method(args) == expected</div>
+    <textarea id="test-cases" style="font-family:'JetBrains Mono',monospace;font-size:13px;min-height:80px;" placeholder="Solution().twoSum([2,7,11,15], 9) == [0,1]&#10;Solution().twoSum([3,2,4], 6) == [1,2]"></textarea>
+    <button class="btn" id="btn-run" style="background:var(--blue);color:#fff;margin-top:10px;font-size:9px;width:100%;box-shadow:0 4px 0 #1133aa;" onclick="runCode()">&#9654; RUN TEST CASES</button>
+    <div id="run-output" style="margin-top:12px;display:none;">
+      <div id="run-results" style="font-family:'JetBrains Mono',monospace;font-size:13px;"></div>
+    </div>
+  </div>
+
+  <!-- Section 5: Complexity + Reflection -->
+  <div class="section locked" id="section-reflect">
+    <div class="section-header">
+      <span class="section-title">05 · Complexity + Reflection</span>
+      <span class="section-badge required">REQUIRED</span>
+    </div>
+    <label>Time and space complexity (explain why)</label>
+    <textarea id="complexity-explanation" placeholder="Time: O(n) because... Space: O(n) because..."></textarea>
+    <div class="char-count" id="cc-complexity">0 chars</div>
+    <label style="margin-top:12px;">What did you learn or struggle with?</label>
+    <textarea id="reflection" placeholder="I struggled with... I learned that... Next time I would..."></textarea>
+    <div class="char-count" id="cc-reflection">0 chars</div>
+  </div>
+
+  <!-- Submit -->
+  <button class="btn btn-submit" id="btn-submit" disabled onclick="submitSession()">
+    SUBMIT TO PET FOR JUDGMENT
+  </button>
+
+</div>
+
+<!-- Result overlay -->
+<div id="result-overlay">
+  <div class="result-box" id="result-box">
+    <span class="result-emoji" id="result-emoji">🐣</span>
+    <div class="result-title" id="result-title">ACCEPTED</div>
+    <div class="result-score" id="result-score">Score: 0/100</div>
+    <div class="result-reasoning" id="result-reasoning"></div>
+    <div class="followup-section" id="followup-section" style="display:none">
+      <div class="followup-label">⚠ YOUR PET HAS A QUESTION</div>
+      <div class="followup-q" id="followup-q"></div>
+      <textarea class="followup-input" id="followup-answer" placeholder="Answer honestly..."></textarea>
+      <button class="btn" style="background:var(--purple);color:#fff;margin-top:8px;width:100%;font-size:9px;" onclick="submitFollowup()">ANSWER</button>
+    </div>
+    <button class="btn" style="background:var(--blue);color:#fff;width:100%;font-size:9px;" onclick="window.location='/'">BACK TO PET</button>
+  </div>
+</div>
+
+<script>
+let sessionId = null;
+let startTime = null;
+let timerInterval = null;
+const REQUIRED_MINUTES = 30;
+
+// Load pet stage
+fetch('/api/pet_status').then(r=>r.json()).then(p=>{
+  const sprites = {egg:'🥚',baby:'🐣',teen:'🐥',adult:'🐦',dragon:'🐲',legend:'🦄'};
+  document.getElementById('pet-mini').textContent = p.is_alive ? (sprites[p.stage]||'🥚') : '💀';
+});
+
+// Char counters
+function watchChars(inputId, countId, threshold) {
+  const el = document.getElementById(inputId);
+  const cc = document.getElementById(countId);
+  el.addEventListener('input', () => {
+    const n = el.value.length;
+    cc.textContent = `${n} chars`;
+    cc.className = 'char-count' + (n >= threshold ? ' ok' : '');
+    checkSubmitReady();
+  });
+}
+watchChars('problem-explanation', 'cc-explain', 100);
+watchChars('approach-explanation', 'cc-approach', 100);
+watchChars('complexity-explanation', 'cc-complexity', 50);
+watchChars('reflection', 'cc-reflection', 50);
+
+function startSession() {
+  const title = document.getElementById('lc-title').value.trim();
+  if (!title) { alert('Enter a problem title first!'); return; }
+
+  fetch('/api/start_session', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      title,
+      link: document.getElementById('lc-link').value,
+      difficulty: document.getElementById('lc-difficulty').value
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    sessionId = data.session_id;
+    startTime = Date.now();
+    startTimer();
+    unlockSections();
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-start').textContent = 'STARTED';
+    document.getElementById('btn-start').style.background = '#333';
+  });
+}
+
+function unlockSections() {
+  ['section-explain','section-approach','section-solution','section-reflect'].forEach(id => {
+    document.getElementById(id).classList.remove('locked');
+  });
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = Math.floor(elapsed % 60);
+    const display = document.getElementById('timer-display');
+    display.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const pct = Math.min(100, (elapsed / (REQUIRED_MINUTES * 60)) * 100);
+    document.getElementById('timer-bar').style.width = pct + '%';
+
+    const mins = elapsed / 60;
+    if (mins >= REQUIRED_MINUTES) {
+      display.className = '';
+      document.getElementById('timer-bar').style.background = 'var(--green)';
+      document.getElementById('timer-hint').textContent = '✅ Minimum time reached!';
+    } else if (mins >= 20) {
+      display.className = 'warning';
+      document.getElementById('timer-bar').style.background = 'var(--yellow)';
+      document.getElementById('timer-hint').textContent = `${Math.ceil(REQUIRED_MINUTES - mins)} minutes remaining`;
+    } else {
+      display.className = 'danger';
+      document.getElementById('timer-bar').style.background = 'var(--red)';
+      document.getElementById('timer-hint').textContent = `Need ${Math.ceil(REQUIRED_MINUTES - mins)} more minutes`;
+    }
+    checkSubmitReady();
+  }, 1000);
+}
+
+function checkSubmitReady() {
+  if (!sessionId) return;
+  const elapsed = startTime ? (Date.now() - startTime) / 1000 / 60 : 0;
+  const explain = document.getElementById('problem-explanation').value.length;
+  const approach = document.getElementById('approach-explanation').value.length;
+  const complexity = document.getElementById('complexity-explanation').value.length;
+  const ready = elapsed >= 5 && explain >= 50 && approach >= 50 && complexity >= 50;
+  document.getElementById('btn-submit').disabled = !ready;
+}
+
+function submitSession() {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'SUBMITTING...';
+
+  fetch('/api/submit_session', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      session_id: sessionId,
+      problem_explanation: document.getElementById('problem-explanation').value,
+      approach_explanation: document.getElementById('approach-explanation').value,
+      solution_text: document.getElementById('solution-text').value,
+      complexity_explanation: document.getElementById('complexity-explanation').value,
+      reflection: document.getElementById('reflection').value
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    clearInterval(timerInterval);
+    showResult(data);
+  });
+}
+
+function showResult(data) {
+  const overlay = document.getElementById('result-overlay');
+  const box = document.getElementById('result-box');
+  const accepted = data.outcome === 'accepted';
+
+  box.className = 'result-box ' + (accepted ? 'accepted' : 'rejected');
+  document.getElementById('result-emoji').textContent = accepted ? '🎉' : '😢';
+  document.getElementById('result-title').textContent = accepted ? 'ACCEPTED' : 'SUSPICIOUS';
+  document.getElementById('result-title').className = 'result-title ' + (accepted ? 'accepted' : 'rejected');
+  document.getElementById('result-score').textContent = `Score: ${data.final_score}/100`;
+  document.getElementById('result-reasoning').textContent = data.reasoning || '';
+
+  if (data.follow_up_question) {
+    const fq = document.getElementById('followup-section');
+    fq.style.display = 'block';
+    document.getElementById('followup-q').textContent = data.follow_up_question;
+  }
+
+  overlay.classList.add('show');
+}
+
+function submitFollowup() {
+  const answer = document.getElementById('followup-answer').value;
+  fetch('/api/submit_followup', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ session_id: sessionId, answer })
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('followup-section').innerHTML =
+      `<div style="color:var(--green);font-size:17px;padding:8px">${data.message}</div>`;
+  });
+}
+
+function runCode() {
+  const code = document.getElementById('solution-text').value.trim();
+  const tests = document.getElementById('test-cases').value.trim();
+  const btn = document.getElementById('btn-run');
+  const output = document.getElementById('run-output');
+  const results = document.getElementById('run-results');
+  if (!code) { alert('Write your solution first!'); return; }
+  if (!tests) { alert('Add at least one test case!'); return; }
+  btn.textContent = 'RUNNING...';
+  btn.disabled = true;
+  output.style.display = 'block';
+  results.innerHTML = '<span style="color:var(--dim)">Running tests...</span>';
+  fetch('/api/run_code', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ code, tests })
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.textContent = '&#9654; RUN TEST CASES';
+    btn.disabled = false;
+    let html = '';
+    data.results.forEach((r, i) => {
+      const color = r.passed ? 'var(--green)' : 'var(--red)';
+      const icon = r.passed ? 'PASS' : 'FAIL';
+      html += '<div style="padding:8px 0;border-bottom:1px solid var(--border);">';
+      html += '<div style="color:' + color + '">[' + icon + '] Test ' + (i+1) + ': ' + r.test + '</div>';
+      if (r.output !== undefined) html += '<div style="color:var(--dim);padding-left:16px">Got: ' + r.output + '</div>';
+      if (r.error) html += '<div style="color:var(--red);padding-left:16px">Error: ' + r.error + '</div>';
+      html += '</div>';
+    });
+    const passed = data.results.filter(r => r.passed).length;
+    const total = data.results.length;
+    const sc = passed === total ? 'var(--green)' : 'var(--red)';
+    html += '<div style="margin-top:10px;font-family:"Press Start 2P",monospace;font-size:9px;color:' + sc + '">' + passed + '/' + total + ' TESTS PASSED</div>';
+    results.innerHTML = html;
+  })
+  .catch(e => {
+    btn.textContent = '&#9654; RUN TEST CASES';
+    btn.disabled = false;
+    results.innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>';
+  });
+}
+</script>
+</body>
+</html>

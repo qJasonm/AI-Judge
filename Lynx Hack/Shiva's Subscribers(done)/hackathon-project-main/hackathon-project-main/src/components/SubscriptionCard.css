@@ -1,0 +1,130 @@
+.subscription-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.subscription-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: background var(--transition-normal);
+}
+
+.subscription-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+  border-color: var(--glass-border);
+}
+
+.subscription-card:hover::before {
+  background: var(--accent-primary);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--border-radius-sm);
+  background: var(--glass-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.name-category {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.name-category h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.category {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.cost-container {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.cost {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.billing-cycle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.next-billing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.next-billing .label {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+}
+
+.next-billing .date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.manage-btn {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-sm);
+  background: rgba(99, 102, 241, 0.1);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.manage-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+}

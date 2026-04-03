@@ -1,0 +1,29 @@
+Hello, my name is Ahmed, and my project is about a LeetCode Tamagotchi.
+
+Most people say they’re grinding LeetCode, but many are not being honest with themselves or their future employers. They often rely heavily on AI tools to do most of the work.
+
+So I built a LeetCode Tamagotchi that holds you accountable for what you do each day.
+
+With that being said, let me show you how it works.
+
+This is Betty. He is my accountability partner. If I don’t solve one LeetCode problem a day, he loses health. If I cheat or rush, he knows. And if I skip too many days, he dies.
+
+Now let me demonstrate how this project works. When you click start, a timer begins. The minimum is 30 minutes per day, but for this demonstration, I set it to one minute to make sure everything works quickly.
+
+Let’s say I choose a problem, for example, the Two Sum problem. The difficulty level is easy. You paste the LeetCode problem URL, and then you start.
+
+Once you click start, the timer begins. During this time, you explain how you think about the problem and what steps you would take. For this example, I’ll just type something simple. There is a minimum character requirement, so you can’t just input anything.
+
+Next, you describe your approach. Then you paste your solution and select test cases to run. If you try to run it without a solution, it will prompt you to write one first.
+
+You also need to provide time and space complexity, as every LeetCode problem requires that.
+
+After that, there is a reflection section. This is where the Gemini API comes in. It evaluates your responses. Since I didn’t provide meaningful answers, it gives me a low score, which means my pet loses health.
+
+Your pet will also ask you a follow-up question, such as explaining why your solution worked or didn’t work. Based on your response, the pet decides whether it is satisfied.
+
+In this case, the pet is not convinced, so I receive a low score.
+
+You can then go back to the pet dashboard and see your results, including your streak, health, and session history. For example, I solved a problem previously in about 58 minutes and received a score of 70.
+
+If your score is above 60, your pet gains health and becomes happy. If it’s below 60, your pet loses health. If you miss several days in a row, your Tamagotchi will eventually die.

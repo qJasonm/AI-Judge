@@ -1,0 +1,23 @@
+Hello, my name is Ronald. Today, I’ll be talking about my app called Mindbridge, which combines public health with mental and behavioral health to help people discover resources that can improve their lives.
+
+From a public health perspective, I’ve worked in the field for about five years. One of the most frustrating challenges is that many departments offer free services, but people don’t even know they exist. On top of that, many people don’t fully understand what public health is, and the field is often behind technologically.
+
+To bridge this gap, I created a website that helps people explore local resources, especially for Denver residents. Users can see what their community is sharing, including events and resources related to mental health, behavioral health, and general well-being. There’s also an About page explaining the purpose of the platform.
+
+The AI component of this platform is also called Mindbridge. Users can ask it questions about available resources. For example, in the community tab, people can share posts—similar to a more focused, local version of a social platform—centered around community support and available services.
+
+For instance, someone might share their experience with starting therapy later in life and encourage others not to wait. If a user relates to that and doesn’t know where to start, they can ask the AI for guidance.
+
+The AI uses your location, such as Denver, to provide localized recommendations. It can show different options available nearby and tailor suggestions based on who you are. For example, students may see more free or low-cost resources, especially those available through universities.
+
+Users can also browse resources directly, where they’ll find options tailored to their eligibility. Some services are universal, such as Colorado’s 988 crisis line or organizations like The Trevor Project. Filters help users quickly find what applies to them.
+
+Another key feature is the ability for users to suggest resources. They can submit details like the resource name, services offered, contact information, cost, and eligibility. Submissions are reviewed by an admin before being published, making this a community-driven resource-sharing platform.
+
+There’s also an events section to help build local connections. Users can browse events or submit their own, providing contact details such as an Instagram handle, phone number, or email.
+
+Additionally, the platform includes a reflection-based feed. Users can share their thoughts and experiences, but the focus is not on comments. Instead, the goal is to create a non-judgmental, supportive environment where people feel less alone.
+
+Ultimately, Mindbridge is designed to help people connect with resources, understand public and mental health support, and realize they are not alone.
+
+If you have any questions, feel free to ask. Thank you so much, and have a great day.

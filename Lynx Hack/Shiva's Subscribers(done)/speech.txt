@@ -1,0 +1,31 @@
+You check your bank account and see a charge you don’t recognize. Then it hits you — that free trial from eight months ago that you completely forgot to cancel.
+
+You’re not alone. 61% of people are rethinking their paid subscriptions right now. 26% have already cancelled one, and 24% are still just thinking about it — not acting. Why? Because we forget. Because free trials trap us.
+
+Subscriptions are scattered across multiple email accounts, with billing names we barely recognize. We don’t always know what better alternatives exist. People lose over $1,000 every year because of this.
+
+The most forgotten subscriptions aren’t even obvious: 37% forget their mobile plan, 30% forget their internet, and 22% forget streaming services. This is the subscription paradox. Subscriptions are great, but we lose track. We don’t know where our money is going, and it quietly piles up.
+
+Existing apps like Rocket Money, Truebill, Trim, and Bobby only show you a list. No alternatives, no personalization, no action. That’s not enough.
+
+So we built Subsave. Subsave is an AI-powered subscription watchdog built on Google Gemini. It finds your subscriptions, analyzes them, finds better alternatives, and helps you take action — all in one place. It’s the only tool that does all four.
+
+When you open Subsave, it asks who you are: student, veteran, freelancer, healthcare worker. Our AI engine, Player, uses this to find deals built specifically for your situation. That personalization is what separates us.
+
+Then you hit scan. Player parses your transaction history, detects every recurring charge — even across different billing names and accounts — and scores each one by how much you could save. $130 a month across eight subscriptions — that’s over $1,500 a year just disappearing.
+
+Each card gives you three actions: cancel it, get a cancellation guide, or find something cheaper. This is optimization made simple. Player finds better options and presents them one by one — monthly savings, yearly savings, and a personalized reason why it fits you.
+
+Swipe right to adopt, swipe left to skip. One swipe just replaced LinkedIn Premium with a completely free alternative — $480 saved per year from a single decision.
+
+The dashboard pulls everything together: original spend, optimized spend, monthly and yearly savings, and a 12-month projection of your savings growing over time. Full visibility, nothing hidden.
+
+If you have questions, Player is there as a chat assistant. It responds based on your actual data, not generic advice. And if the AI gets overloaded, our smart fallback system kicks in automatically, so advice never stops.
+
+This is not just about subscriptions. It’s about control. Awareness. Making sure your money works for you.
+
+Subsave runs on React on the front end, Node.js, and a REST API on the backend with a bank API pulling real transaction data. Functional, scalable, built in one week.
+
+Detect, analyze, recommend, act, track — the full loop, all in one place.
+
+Subsave. Track. Manage. Save.

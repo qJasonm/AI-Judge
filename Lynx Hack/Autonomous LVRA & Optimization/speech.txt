@@ -1,0 +1,47 @@
+Hello, this is Alex Mario. Today I’ll be presenting my LVR energy optimization automation workflow.
+
+I’ll start by briefly going over the inputs. First, we have a floor layout of the science building’s second floor. This is a section that includes multiple classrooms, and we’ll be analyzing classroom 21107. This layout is used to calculate square footage.
+
+In addition, we have supply and exhaust valve data from the previous week, recorded every 10 minutes. This allows us to determine both occupied and unoccupied airflow rates.
+
+For resources, we use the LVR user guide, which classifies laboratories on a scale from 0 to 4 based on safety. This classification helps determine the appropriate airflow rating for each room. Using this, we can reduce unnecessary airflow and improve energy efficiency, especially across campus HVAC systems.
+
+We also reference ANSI and ASHRAE Standard 62.1, which outlines ventilation and indoor air quality requirements, including specific guidelines for laboratories.
+
+Additionally, we use an LVR tool to support and validate our calculations within the workflow.
+
+Now, I’ll demonstrate the workflow.
+
+When I execute it, a form appears asking which room to analyze. We’ll select room 21107. This is a basic biology classroom with minimal chemical usage, so we’ll assume acetone is present.
+
+We then rank several factors from 0 to 4, including exposure limits, quantity, generation potential, and generation method. These inputs align with the LVR guide to determine the overall classification.
+
+Next, we input change dynamics, which reflect how frequently the room conditions change. In this case, it’s about once per year.
+
+We also rate housekeeping, which is high since teaching assistants and professors maintain the space.
+
+We then evaluate exposure control devices such as fume hoods. This classroom does not have them, and they are not required, so we mark those as not applicable.
+
+Ventilation effectiveness is rated as good, so we assign it a rating of 1.
+
+Finally, we input the collected airflow data and upload the floor plan.
+
+Once submitted, the workflow begins. It analyzes the floor plan using a Gemini model to calculate square footage. It then processes the airflow data to determine occupied and unoccupied conditions. All inputs are combined and labeled before being passed to the AI agent.
+
+The AI agent uses a GPT-4-based model and retrieves supporting information from a Google Drive database containing relevant documents. It processes these using a document loader and text splitter to analyze the data effectively.
+
+Next, the system calculates air changes per hour and generates a report using another model. The output is converted from text to HTML and then into a downloadable PDF.
+
+Here is the final report for room 21107.
+
+The current air changes per hour are 10.1, and the system recommends reducing this to 4. For unoccupied conditions, it recommends reducing from 2.81 to 2.
+
+The report also includes an energy savings analysis explaining these changes. By reducing airflow, the system lowers fan energy demand and reduces the thermal load required to reheat air, improving overall efficiency while maintaining safety standards.
+
+It also details the safety classification process based on the LVR guide, confirming the accuracy of the evaluation.
+
+The final score for this room is 44, which places it in a level 1 classification. Based on this classification and applicable standards, the recommended airflow adjustments are safe and appropriate given the low chemical usage in the space.
+
+That concludes the demonstration of my energy optimization automation workflow.
+
+Thank you.

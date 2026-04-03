@@ -1,0 +1,66 @@
+Inspiration
+Here is a number that stopped us in our tracks: the average American loses over $1,000 a year to forgotten subscriptions. Not subscriptions they love. Subscriptions they forgot existed. The meditation app from a stressful finals week. The free trial that quietly started billing. The second cloud storage plan nobody remembers signing up for. We looked at the tools that already exist. Rocket Money, Truebill, Trim, Bobby. They all do the same thing: pull up a list of your subscriptions and leave you to figure out the rest. No context. No personalization. No understanding that a college student and a veteran have wildly different needs and qualify for completely different deals. That gap is what motivated us. We did not want to build another subscription tracker. We wanted to build a subscription watchdog. One that actually knows who you are, understands what you are overpaying for, and tells you exactly what to do about it. As four full-stack developers at CU Denver, we saw Lynx Hack as the perfect opportunity to bring that vision to life.
+
+What it does
+SubSave is an AI-powered subscription watchdog that helps you Track. Manage. Save.
+
+Core Features-
+**Smart Onboarding: **Collects your profile like student, veteran, freelancer, or healthcare worker to power personalized recommendations from the start. **Pladir AI Engine: **Powered by Google Gemini 2.0 Flash, Pladir scores each subscription by savings potential and generates recommendations tailored specifically to you. **AI Scan: **Simulates bank transaction analysis to detect every recurring charge, even the ones hiding behind billing names you do not recognize. **Optimization Sweeps: **A Tinder-style swipe deck surfaces cheaper alternatives tailored to your profile. Swipe right to adopt. Swipe left to skip. **Cancellation Assistant: **Step-by-step guides to actually cancel flagged subscriptions, with direct links and pre-written cancellation messages. **Savings Dashboard: **Real-time charts showing your original spend vs. optimized spend across a 12-month savings projection. **AI Chat Assistant: **Ask anything about your subscriptions and get contextual, data-aware answers from Gemini. Not generic advice. Yours. **Smart Fallback System: **If Gemini is unavailable, our built-in fallback engine keeps the experience smooth and uninterrupted. The app never crashes.
+
+How we built it
+SubSave is a full-stack application with a React 19 + Vite frontend and a Node.js + Express backend, connected through a clean REST API layer.
+
+Frontend
+React 19 + Vite for fast development and hot module replacement TailwindCSS for rapid, responsive styling Framer Motion for fluid animations and swipe gestures Recharts for interactive savings dashboard visualizations
+
+Backend
+Node.js + Express for the REST API server Google Gemini 2.0 Flash via the AI SDK Three core engines: AI analysis service, cancellation engine, and subscription scanning engine
+
+The Pladir AI Engine
+At the heart of SubSave is Pladir, our AI engine powered by Google Gemini 2.0 Flash. It works in five steps:
+
+Profile Collection collects your name, age, and occupation during onboarding to personalize everything
+Transaction Scanning detects every recurring charge even across different billing names
+Savings Scoring gives each subscription a score based on how much you could save
+Alternative Discovery surfaces cheaper options through the swipe deck with personalized reasoning
+Smart Fallback takes over with the internal engine if Gemini is unavailable
+The entire flow, onboard, scan, analyze, recommend, act, and track, is a complete loop. Users never hit a dead end wondering what to do next.
+
+Accomplishments that we're proud of
+Built a fully functional full-stack AI app in one week from scratch
+
+Successfully integrated Google Gemini 2.0 Flash into a live product pipeline with reliable structured outputs
+
+Designed a swipe-based UX that makes saving money feel intuitive and even fun
+
+Built a Smart Fallback System that keeps the app running even when the AI is unavailable
+
+Created genuine personalization where a student and a veteran get completely different recommendations from the same app
+
+Challenges we ran into
+AI Reliability: Making Gemini's responses production-stable was our biggest hurdle. A language model can return beautifully structured JSON one call and a free-form paragraph the next. We built robust parsing logic and the Smart Fallback System to make sure SubSave never shows a blank screen or crashes. *Data Simulation: * Since we could not connect to real bank accounts during a hackathon, we built a scanning engine that generates realistic, categorized subscription data that mirrors real-world spending patterns. **The Swipe UX: **Building the Tinder-style swipe deck with Framer Motion was more nuanced than expected. Getting the drag physics, snap-back animations, card stacking, and adopt or reject thresholds to feel right required a lot of fine-tuning. **Time Pressure: **Building a full-stack AI app with real Gemini integration, a multi-screen animated frontend, and three backend engines in one week while attending classes was intense. We prioritized the AI pipeline first and built everything else around it. **Personalization at Scale: **Getting Gemini to meaningfully differentiate recommendations based on user profile required careful prompt engineering. We kept iterating on our prompt templates until the personalization felt genuine and not performative.
+
+What we learned
+The real challenge with large language models is not getting a response. It is getting a structured, reliable response you can actually build a product around
+Personalization changes everything. The moment we factored in user profiles, the quality of recommendations jumped dramatically
+In a hackathon, get the riskiest technical piece working first. Once Pladir was returning solid recommendations, everything else fell into place
+Building production-ready AI features is mostly about error handling, fallback logic, and output validation
+What's next for Shiva's Subscribers
+Real bank integration via Plaid API for automatic subscription detection
+One-click cancellation by automating the cancellation flow directly within the app
+Expanded personalization with more user categories and regional deal discovery
+Mobile app so users can manage subscriptions on the go
+Subscription alerts to notify users before free trials convert to paid plans
+Built with
+react
+vite
+tailwindcss
+framer-motion
+recharts
+node.js
+express.js
+google-gemini
+javascript
+rest-api
+axios
+react-router

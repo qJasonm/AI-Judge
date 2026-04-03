@@ -1,0 +1,28 @@
+/* Global CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode Defaults */
+    --background: 255 255 255; /* White */
+    --surface: 244 244 245; /* Zinc 100 */
+    --primary: 249 115 22; /* Orange 500 */
+    --secondary: 20 184 166; /* Teal 500 */
+    --accent: 132 204 22; /* Lime 500 */
+  }
+
+  .dark {
+    /* Dark Mode Defaults */
+    --background: 9 9 11; /* Zinc 950 */
+    --surface: 24 24 27; /* Zinc 900 */
+    --primary: 249 115 22; /* Orange 500 */
+    --secondary: 20 184 166; /* Teal 500 */
+    --accent: 132 204 22; /* Lime 500 */
+  }
+
+  body {
+    @apply bg-background text-gray-900 dark:text-white transition-colors duration-300;
+  }
+}

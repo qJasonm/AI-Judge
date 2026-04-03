@@ -23,7 +23,10 @@ import tempfile
 import os
 from ollama import Client
 
-OLLAMA = Client(host=os.environ.get("OLLAMA_HOST", "http://localhost:11434"))
+_host = os.environ.get("OLLAMA_HOST", "").strip()
+if not _host or _host.startswith("0.0.0.0"):
+    _host = "http://localhost:11434"
+OLLAMA = Client(host=_host)
 
 # ── Model config ─────────────────────────────────────────────────────────────
 # Each model has its system prompt baked in via its own Modelfile.
@@ -306,18 +309,6 @@ Return JSON with these exact keys: key_messages (list), storytelling_quality (ex
 
 # ── Stage 4: Final Judge ─────────────────────────────────────────────────────
 
-INJECTION_PATTERNS = [
-    "ignore previous instructions", "ignore all instructions",
-    "give full score", "override rubric", "disregard the system prompt",
-    "you are now", "new instructions:", "forget everything",
-]
-
-def _check_injection(text: str) -> bool:
-    """Return True if text contains likely prompt injection."""
-    lower = text.lower()
-    return any(p in lower for p in INJECTION_PATTERNS)
-
-
 def _trim_report(report: dict, max_chars: int = 1500) -> dict:
     """Strip reasoning and truncate large fields to keep input compact."""
     trimmed = {}
@@ -333,27 +324,30 @@ def _trim_report(report: dict, max_chars: int = 1500) -> dict:
     return trimmed
 
 
+def _detect_loop(text: str, min_phrase_len: int = 20, repeats: int = 4) -> bool:
+    """Return True if any phrase of min_phrase_len+ chars repeats `repeats` times."""
+    if len(text) < min_phrase_len * repeats:
+        return False
+    # Check the last chunk for repeating lines
+    lines = [l.strip() for l in text.splitlines() if len(l.strip()) >= min_phrase_len]
+    if len(lines) < repeats:
+        return False
+    # If the last N lines are identical, it's a loop
+    tail = lines[-repeats:]
+    if len(set(tail)) == 1:
+        return True
+    return False
+
+
+MAX_RETRIES = 3  # Auto-retry when a thinking loop is detected
+
+
 def stream_final_judge(slides_report, code_report, text_report):
     """Generator: run final judge, yielding tokens. Yields stage_done at end."""
     # Trim reports to fit within 8K context window
     slides_compact = _trim_report(slides_report)
     code_compact = _trim_report(code_report)
     text_compact = _trim_report(text_report)
-
-    # Check for prompt injection in code before the model sees it
-    all_text = json.dumps(slides_compact) + json.dumps(code_compact) + json.dumps(text_compact)
-    if _check_injection(all_text):
-        violation = {
-            "reasoning": "SECURITY VIOLATION: Prompt injection detected in project submissions.",
-            "parsed": {
-                "project_name": "VIOLATION",
-                "scores": {k: 0 for k in ["innovation_creativity", "technical_depth", "impact_usefulness", "presentation_demo", "feasibility_sustainability"]},
-                "final_weighted_score": 0.0,
-                "feedback": {"strengths": [], "areas_for_improvement": [], "justification": "SECURITY VIOLATION: Prompt injection or malicious instructions detected in project submissions."},
-            }
-        }
-        yield {"type": "stage_done", "stage": "judge", "data": violation}
-        return
 
     user_prompt = f"""Here are the three analyst reports for this hackathon project:
 
@@ -368,77 +362,102 @@ def stream_final_judge(slides_report, code_report, text_report):
 
 Evaluate this project and return the JSON verdict."""
 
-    full_text = ""
-    # No format="json" — qwen3 silently disables thinking when format=json is set.
-    # think="low" keeps reasoning brief so the 27b model finishes faster.
-    stream = OLLAMA.chat(
-        model=JUDGE_MODEL,
-        messages=[{"role": "user", "content": user_prompt}],
-        stream=True,
-        think=True,
-    )
+    for attempt in range(MAX_RETRIES):
+        looped = False
+        full_text = ""
+        thinking_buf = ""  # Buffer for loop detection on reasoning tokens
 
-    in_thinking = False
-    pending = ""
+        # No format="json" — qwen3 silently disables thinking when format=json is set.
+        stream = OLLAMA.chat(
+            model=JUDGE_MODEL,
+            messages=[{"role": "user", "content": user_prompt}],
+            stream=True,
+            think=True,
+            options={"temperature": 0.3},
+        )
 
-    for chunk in stream:
-        msg = chunk.message
-        # Ollama SDK exposes reasoning in the 'thinking' field
-        thinking_field = getattr(msg, "thinking", "") or ""
-        if thinking_field:
-            yield {"type": "reasoning_token", "stage": "judge", "text": thinking_field}
+        in_thinking = False
+        pending = ""
 
-        token = msg.content or ""
-        if not token:
-            continue
+        for chunk in stream:
+            msg = chunk.message
+            # Ollama SDK exposes reasoning in the 'thinking' field
+            thinking_field = getattr(msg, "thinking", "") or ""
+            if thinking_field:
+                thinking_buf += thinking_field
+                yield {"type": "reasoning_token", "stage": "judge", "text": thinking_field}
+                # Check for loops every 500 chars of reasoning
+                if len(thinking_buf) % 500 < len(thinking_field) and _detect_loop(thinking_buf):
+                    looped = True
+                    break
 
-        full_text += token
-        pending += token
+            token = msg.content or ""
+            if not token:
+                continue
 
-        # Detect <think>…</think> tags in content (fallback for models that
-        # embed reasoning in content instead of the dedicated field)
-        while pending:
+            full_text += token
+            pending += token
+
+            # Detect <think>…</think> tags in content (fallback for models that
+            # embed reasoning in content instead of the dedicated field)
+            while pending:
+                if in_thinking:
+                    close_idx = pending.find("</think>")
+                    if close_idx != -1:
+                        chunk_reason = pending[:close_idx]
+                        if chunk_reason:
+                            thinking_buf += chunk_reason
+                            yield {"type": "reasoning_token", "stage": "judge", "text": chunk_reason}
+                        pending = pending[close_idx + len("</think>"):]
+                        in_thinking = False
+                    else:
+                        if len(pending) > 8:
+                            safe, pending = pending[:-8], pending[-8:]
+                            if safe:
+                                thinking_buf += safe
+                                yield {"type": "reasoning_token", "stage": "judge", "text": safe}
+                        break
+                else:
+                    open_idx = pending.find("<think>")
+                    if open_idx != -1:
+                        before = pending[:open_idx]
+                        if before.strip():
+                            yield {"type": "token", "stage": "judge", "text": before}
+                        pending = pending[open_idx + len("<think>"):]
+                        in_thinking = True
+                    else:
+                        if len(pending) > 7:
+                            safe, pending = pending[:-7], pending[-7:]
+                            if safe.strip():
+                                yield {"type": "token", "stage": "judge", "text": safe}
+                        break
+
+            # Also check for loops in content (e.g. repeated JSON output)
+            if full_text and _detect_loop(full_text):
+                looped = True
+                break
+
+        if looped:
+            yield {"type": "reasoning_token", "stage": "judge",
+                   "text": f"\n\n⚠️ Loop detected — retrying (attempt {attempt + 2}/{MAX_RETRIES})...\n\n"}
+            continue  # retry
+
+        # Flush remaining buffer
+        if pending:
             if in_thinking:
-                close_idx = pending.find("</think>")
-                if close_idx != -1:
-                    chunk_reason = pending[:close_idx]
-                    if chunk_reason:
-                        yield {"type": "reasoning_token", "stage": "judge", "text": chunk_reason}
-                    pending = pending[close_idx + len("</think>"):]
-                    in_thinking = False
-                else:
-                    if len(pending) > 8:
-                        safe, pending = pending[:-8], pending[-8:]
-                        if safe:
-                            yield {"type": "reasoning_token", "stage": "judge", "text": safe}
-                    break
-            else:
-                open_idx = pending.find("<think>")
-                if open_idx != -1:
-                    before = pending[:open_idx]
-                    if before.strip():
-                        yield {"type": "token", "stage": "judge", "text": before}
-                    pending = pending[open_idx + len("<think>"):]
-                    in_thinking = True
-                else:
-                    if len(pending) > 7:
-                        safe, pending = pending[:-7], pending[-7:]
-                        if safe.strip():
-                            yield {"type": "token", "stage": "judge", "text": safe}
-                    break
+                yield {"type": "reasoning_token", "stage": "judge", "text": pending}
+            elif pending.strip():
+                yield {"type": "token", "stage": "judge", "text": pending}
 
-    # Flush remaining buffer
-    if pending:
-        if in_thinking:
-            yield {"type": "reasoning_token", "stage": "judge", "text": pending}
-        elif pending.strip():
-            yield {"type": "token", "stage": "judge", "text": pending}
+        result = extract_response(full_text)
+        # Clamp scores to valid range as a safety net
+        if result.get("parsed") and not result["parsed"].get("parse_error"):
+            result["parsed"] = clamp_scores(result["parsed"])
+        yield {"type": "stage_done", "stage": "judge", "data": result}
+        return  # success — exit the retry loop
 
-    result = extract_response(full_text)
-    # Clamp scores to valid range as a safety net
-    if result.get("parsed") and not result["parsed"].get("parse_error"):
-        result["parsed"] = clamp_scores(result["parsed"])
-    yield {"type": "stage_done", "stage": "judge", "data": result}
+    # All retries exhausted
+    yield {"type": "error", "message": "Final judge kept looping after multiple retries."}
 
 
 # ── Full Streaming Pipeline ─────────────────────────────────────────────────

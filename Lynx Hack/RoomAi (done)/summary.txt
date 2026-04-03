@@ -1,0 +1,73 @@
+Tagline: Match Smarter. Live Better. RoomAi helps you find compatible roommates early using AI matching plus co-living tools for messaging, conflict support, utilities, and rent coordination.
+
+About the Project
+No demo or video
+Inspiration
+RoomAi was inspired by a simple but painful reality: having the wrong roommate can make daily life stressful and exhausting.
+
+The key insight behind this project is that many roommate conflicts are not about “bad people,” but about compatibility mismatches in routines, communication style, cleanliness expectations, social habits, and financial behavior.
+
+I wanted to build something that helps people avoid those problems before they move in together.
+
+What I Built
+RoomAi is a smart and reliable roommate-finding platform centered on compatibility:
+
+A structured onboarding flow captures lifestyle and living-preference signals
+A compatibility engine translates those signals into practical roommate matches
+Messaging allows users to connect directly once they find potential matches
+AI chat support helps users navigate communication and conflict scenarios
+Utilities tools support day-to-day shared living (rent splitting, chores, supplies)
+Apartment discovery is included as a secondary support feature, with location-aware results and fallback reliability
+How I Built It
+I built the app as a full-stack TypeScript project using:
+
+React + Vite for the frontend experience
+Supabase for authentication, PostgreSQL data, storage, and backend services
+SQL migrations + RLS policies for secure and maintainable data access
+External APIs (RentCast, OpenStreetMap/Overpass, Nominatim, Geolocation) for apartment/location workflows
+Local fallback data and resilient merge logic so key demos still work even when external APIs are limited
+Challenges I Faced
+Building RoomAi involved both product and technical challenges:
+
+Turning human behavior into structured data: lifestyle compatibility is nuanced, so questionnaire design and scoring had to be practical, not just theoretical
+Balancing intelligence with reliability: live APIs are useful but can fail or return sparse data, so I added robust fallback paths
+Data/security design: messaging, profiles, and user interactions required careful schema evolution and policy-aware access
+UX consistency: I needed the app to feel seamless across onboarding, matching, messaging, and utilities instead of disconnected features
+What I Learned
+This project reinforced a few major lessons for me:
+
+Great roommate products are as much about communication design as matching algorithms
+“AI” only helps when paired with clear user context and actionable outputs
+Reliability matters as much as novelty, especially for demos and real users
+Strong full-stack foundations (typed code, clean migrations, secure policies) make rapid iteration sustainable
+Why This Matters
+RoomAi reframes roommate matching from “find anyone quickly” to “find someone you can actually live with.”
+
+By prioritizing compatibility and supporting real co-living workflows after matching, I aim to reduce avoidable conflict and improve day-to-day quality of life.
+
+Tagline: Match Smarter. Live Better.
+
+Built with
+languages:-typescript
+sql
+html
+css-frontend-framework/build:-react-19
+vite-8-backend-platform-/-baas:-supabase-cloud-services:-supabase-auth
+supabase-postgres
+supabase-storage
+with-sql-migrations-and-row-level-security-(rls)-policies-apis-&-data-sources:-rentcast-api
+openstreetmap-overpass-api
+nominatim-geocoding-api
+browser-geolocation-api-tooling:-eslint
+typescript
+compiler
+runtime/package
+ecosystem:
+node.js
+npm
+version
+control/hosting:
+git
+github
+supabase
+edge

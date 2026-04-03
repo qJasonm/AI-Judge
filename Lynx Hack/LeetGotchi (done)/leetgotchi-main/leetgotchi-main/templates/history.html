@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeetGotchi – History</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f;--panel:#12121a;--border:#2a2a3e;
+    --green:#00ff88;--yellow:#ffd700;--red:#ff4466;--blue:#4488ff;
+    --text:#c8c8d8;--dim:#555566;
+  }
+  * { box-sizing:border-box;margin:0;padding:0; }
+  body { background:var(--bg);color:var(--text);font-family:'VT323',monospace;font-size:18px;padding:24px 16px; }
+  header { max-width:720px;margin:0 auto 24px;display:flex;justify-content:space-between;align-items:center; }
+  .logo { font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-decoration:none; }
+  h2 { font-family:'Press Start 2P',monospace;font-size:10px;color:var(--blue);margin-bottom:16px; }
+  .wrap { max-width:720px;margin:0 auto; }
+  .card {
+    background:var(--panel);border:2px solid var(--border);padding:16px 20px;margin-bottom:12px;
+  }
+  .card.accepted { border-left:4px solid var(--green); }
+  .card.rejected { border-left:4px solid var(--red); }
+  .card-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:8px; }
+  .card-title { font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text); }
+  .card-score { font-family:'Press Start 2P',monospace;font-size:9px; }
+  .card-score.accepted { color:var(--green); }
+  .card-score.rejected { color:var(--red); }
+  .card-meta { font-size:15px;color:var(--dim); }
+  .empty { text-align:center;color:var(--dim);padding:40px;font-size:20px; }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="/">← LeetGotchi</a>
+</header>
+<div class="wrap">
+  <h2>Session History</h2>
+  {% if sessions %}
+    {% for s in sessions %}
+    <div class="card {{ 'accepted' if s.accepted else 'rejected' }}">
+      <div class="card-header">
+        <span class="card-title">{{ s.leetcode_title or 'Untitled' }}</span>
+        <span class="card-score {{ 'accepted' if s.accepted else 'rejected' }}">
+          {{ 'ACCEPTED' if s.accepted else 'REJECTED' }} · {{ s.honesty_score }}/100
+        </span>
+      </div>
+      <div class="card-meta">
+        {{ s.date }} · {{ s.difficulty or 'medium' }} · {{ "%.0f"|format(s.duration_minutes or 0) }} min
+        {% if s.ai_reasoning %} · {{ s.ai_reasoning[:80] }}{% if s.ai_reasoning|length > 80 %}...{% endif %}{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">No sessions yet. Go solve something!</div>
+  {% endif %}
+</div>
+</body>
+</html>

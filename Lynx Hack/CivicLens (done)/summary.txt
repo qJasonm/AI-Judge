@@ -1,0 +1,124 @@
+Project Name
+CivicLens
+
+Project Category
+Engineering and Infrastructure
+
+Inspiration
+In 2019, Berlin introduced strict rent control laws. Within 18 months, rental supply dropped by 56%. Ironically, the very people the policy aimed to help were worse off. Eventually, the policy was overturned-but only after years of damage.
+
+That raised a simple but powerful question:
+
+Every critical system in the world is tested before it goes live-planes use simulators, bridges are stress-tested, medicines go through trials.
+So why are public policies deployed directly on millions of people without simulation?
+
+It’s not because governments don’t care-it’s because tools like this don’t exist at an accessible scale.
+
+We built CivicLens to change that.
+
+What it does
+CivicLens is a policy simulation platform-think of it as a flight simulator for government decisions.
+
+A policymaker can:
+
+Type or upload a policy in plain English
+Instantly simulate its impact using real-world data
+View outcomes through multiple perspectives
+Explore results visually on an interactive 3D map
+Behind the scenes:
+
+We pull live economic and demographic data
+Run three specialized AI agents (Economist, Urban Planner, Equity Analyst)
+Combine their insights into a unified risk and impact score
+The result?
+A clear, data-driven preview of what might happen before the policy affects real lives.
+
+How we built it
+We designed CivicLens as a full-stack, multi-agent AI system:
+
+Data Layer
+US Census API -> demographic + housing data
+FRED API -> macroeconomic indicators
+Web search -> real-world policy outcomes
+Intelligence Layer
+Built a RAG pipeline using ChromaDB + sentence-transformers
+Retrieved only the most relevant context per query to keep responses focused
+Multi-Agent System
+Economist -> market dynamics & incentives
+Urban Planner -> spatial and infrastructure impact
+Equity Analyst -> social and demographic effects
+These agents run in parallel, each producing structured insights.
+
+Orchestration
+Used LangGraph to manage workflow:
+Fetch context
+Run agents
+Combine results
+Frontend
+Built with Next.js, TypeScript, Tailwind CSS
+Integrated Mapbox 3D visualization
+Neighborhoods are rendered using:
+Height -> impact intensity
+Color -> risk level
+Includes a time slider for long-term projections
+Challenges we ran into
+Census API returned HTML instead of JSON due to delayed key activation
+Naming conflict (tavily.py) shadowed the actual library
+NumPy version mismatch broke PyTorch dependencies
+Mapbox race condition caused silent rendering failures
+LLM outputs occasionally broke strict validation constraints
+Each challenge pushed us to build more resilient and reliable systems.
+
+Accomplishments that we're proud of
+Built a working multi-agent AI system with real-time reasoning
+Integrated live data, AI, and 3D visualization into one platform
+Reduced response time from ~45s to ~15s using parallel execution
+Designed a system that is both technically robust and user-friendly
+Delivered a fast, reliable demo experience
+What we learned
+Multi-agent systems produce more balanced insights than single models
+RAG is an architectural decision, not just a feature
+Reliable demos matter more than complex ones
+Most failures happen at system edges, not core logic
+Visualization is key to making complex systems understandable
+Impact
+CivicLens enables policymakers to simulate outcomes before real-world implementation, shifting governance from guesswork to data-driven decision-making.
+It helps identify unintended consequences, promotes more equitable policies by highlighting affected communities, and makes advanced policy analysis accessible to smaller governments.
+Ultimately, it improves transparency, reduces risk, and supports better decisions that impact millions of lives.
+What's next for CivicLens
+We want to evolve CivicLens into a real-world decision-making platform:
+
+Expand beyond housing -> transportation, healthcare, climate policy
+Improve simulation accuracy with richer datasets
+Add interactive scenario comparison
+Enable customizable AI agents for policymakers
+Scale for use by governments, researchers, and organizations
+Our vision:
+
+Make policy decisions testable, transparent, and accountable before they impact real lives.
+
+Built with
+python
+fastapi
+langgraph
+langchain
+claude-(anthropic)
+chromadb
+sentence-transformers
+pandas
+joblib
+pydantic
+uvicorn
+poetry
+next.js
+typescript
+tailwind-css
+react
+mapbox-gl-js
+us-census-api
+fred-api
+tavily-api
+anthropic-api
+geojson
+esri
+github
