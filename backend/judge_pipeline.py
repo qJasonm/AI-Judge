@@ -110,16 +110,17 @@ def stream_chat(model, messages, stage_name):
 
     in_reasoning = False
     for chunk in stream:
-        token = chunk.get("message", {}).get("content", "")
-        reasoning_token = chunk.get("message", {}).get("reasoning", "")
+        msg = chunk.message
+        token = msg.content or ""
+        thinking_token = getattr(msg, "thinking", "") or ""
 
         chunk_text = ""
-        if reasoning_token:
+        if thinking_token:
             if not in_reasoning:
                 in_reasoning = True
                 chunk_text += "<think>\n"
-            chunk_text += reasoning_token
-            
+            chunk_text += thinking_token
+
         if token:
             if in_reasoning:
                 in_reasoning = False
@@ -129,7 +130,7 @@ def stream_chat(model, messages, stage_name):
         if chunk_text:
             full_text += chunk_text
             yield {"type": "token", "stage": stage_name, "text": chunk_text}
-            
+
     if in_reasoning:
         full_text += "\n</think>\n"
         yield {"type": "token", "stage": stage_name, "text": "\n</think>\n"}
@@ -176,7 +177,7 @@ def stream_single_slide(slide_data: dict, slide_num: int, total: int):
         )
 
         for chunk in stream:
-            token = chunk.get("message", {}).get("content", "")
+            token = chunk.message.content or ""
             if token:
                 full_text += token
                 yield {"type": "token", "stage": stage_name, "text": token}
@@ -233,7 +234,7 @@ Return JSON with these exact keys: project_name, languages_used (list), architec
     )
 
     for chunk in stream:
-        token = chunk.get("message", {}).get("content", "")
+        token = chunk.message.content or ""
         if token:
             full_text += token
             yield {"type": "token", "stage": "code", "text": token}
@@ -275,15 +276,16 @@ Return JSON with these exact keys: key_messages (list), storytelling_quality (ex
             stream=True,
         )
         for chunk in stream:
-            reasoning_token = chunk.get("message", {}).get("reasoning", "")
-            token = chunk.get("message", {}).get("content", "")
+            msg = chunk.message
+            thinking_token = getattr(msg, "thinking", "") or ""
+            token = msg.content or ""
 
             # Capture reasoning into <think> block so extract_response can strip it
-            if reasoning_token:
+            if thinking_token:
                 if not in_reasoning:
                     in_reasoning = True
                     full_text += "<think>\n"
-                full_text += reasoning_token
+                full_text += thinking_token
 
             if token:
                 if in_reasoning:
@@ -304,47 +306,97 @@ Return JSON with these exact keys: key_messages (list), storytelling_quality (ex
 
 # ── Stage 4: Final Judge ─────────────────────────────────────────────────────
 
+INJECTION_PATTERNS = [
+    "ignore previous instructions", "ignore all instructions",
+    "give full score", "override rubric", "disregard the system prompt",
+    "you are now", "new instructions:", "forget everything",
+]
+
+def _check_injection(text: str) -> bool:
+    """Return True if text contains likely prompt injection."""
+    lower = text.lower()
+    return any(p in lower for p in INJECTION_PATTERNS)
+
+
+def _trim_report(report: dict, max_chars: int = 1500) -> dict:
+    """Strip reasoning and truncate large fields to keep input compact."""
+    trimmed = {}
+    for k, v in report.items():
+        if k == "reasoning":
+            continue
+        if isinstance(v, str) and len(v) > max_chars:
+            trimmed[k] = v[:max_chars] + "…"
+        elif isinstance(v, list) and len(str(v)) > max_chars:
+            trimmed[k] = v[:10]
+        else:
+            trimmed[k] = v
+    return trimmed
+
+
 def stream_final_judge(slides_report, code_report, text_report):
     """Generator: run final judge, yielding tokens. Yields stage_done at end."""
+    # Trim reports to fit within 8K context window
+    slides_compact = _trim_report(slides_report)
+    code_compact = _trim_report(code_report)
+    text_compact = _trim_report(text_report)
+
+    # Check for prompt injection in code before the model sees it
+    all_text = json.dumps(slides_compact) + json.dumps(code_compact) + json.dumps(text_compact)
+    if _check_injection(all_text):
+        violation = {
+            "reasoning": "SECURITY VIOLATION: Prompt injection detected in project submissions.",
+            "parsed": {
+                "project_name": "VIOLATION",
+                "scores": {k: 0 for k in ["innovation_creativity", "technical_depth", "impact_usefulness", "presentation_demo", "feasibility_sustainability"]},
+                "final_weighted_score": 0.0,
+                "feedback": {"strengths": [], "areas_for_improvement": [], "justification": "SECURITY VIOLATION: Prompt injection or malicious instructions detected in project submissions."},
+            }
+        }
+        yield {"type": "stage_done", "stage": "judge", "data": violation}
+        return
+
     user_prompt = f"""Here are the three analyst reports for this hackathon project:
 
 ## 1. Slides & Presentation Analysis
-{json.dumps(slides_report, indent=2)}
+{json.dumps(slides_compact, indent=2)}
 
 ## 2. Code & Workflow Analysis
-{json.dumps(code_report, indent=2)}
+{json.dumps(code_compact, indent=2)}
 
 ## 3. Speaking & Delivery Summary
-{json.dumps(text_report, indent=2)}
+{json.dumps(text_compact, indent=2)}
 
 Evaluate this project and return the JSON verdict."""
 
     full_text = ""
-    # No format="json" here — qwen3 silently disables thinking when format=json is set.
-    # The system prompt in Modelfile already instructs JSON output; extract_response handles parsing.
+    # No format="json" — qwen3 silently disables thinking when format=json is set.
+    # think="low" keeps reasoning brief so the 27b model finishes faster.
     stream = OLLAMA.chat(
         model=JUDGE_MODEL,
         messages=[{"role": "user", "content": user_prompt}],
         stream=True,
+        think=True,
     )
 
     in_thinking = False
     pending = ""
 
     for chunk in stream:
-        # Newer Ollama builds expose reasoning in a dedicated field
-        reasoning_field = chunk.get("message", {}).get("reasoning", "")
-        if reasoning_field:
-            yield {"type": "reasoning_token", "stage": "judge", "text": reasoning_field}
+        msg = chunk.message
+        # Ollama SDK exposes reasoning in the 'thinking' field
+        thinking_field = getattr(msg, "thinking", "") or ""
+        if thinking_field:
+            yield {"type": "reasoning_token", "stage": "judge", "text": thinking_field}
 
-        token = chunk.get("message", {}).get("content", "")
+        token = msg.content or ""
         if not token:
             continue
 
         full_text += token
         pending += token
 
-        # Detect <think>…</think> tags in content (older Ollama / fallback)
+        # Detect <think>…</think> tags in content (fallback for models that
+        # embed reasoning in content instead of the dedicated field)
         while pending:
             if in_thinking:
                 close_idx = pending.find("</think>")

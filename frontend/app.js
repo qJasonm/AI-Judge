@@ -642,19 +642,7 @@ document.getElementById('judgeBtn')?.addEventListener('click', async () => {
   // Show reasoning section for live streaming
   const reasoningSection = document.getElementById('verdictReasoningSection');
   reasoningSection.classList.remove('hidden');
-
-  const verdictReasoningEl = document.getElementById('verdictReasoning');
-  const slidesReasoningEl = document.getElementById('slidesReasoning');
-  const codeReasoningEl = document.getElementById('codeReasoning');
-  const textReasoningEl = document.getElementById('textReasoning');
-  verdictReasoningEl.textContent = '';
-  slidesReasoningEl.textContent = '';
-  codeReasoningEl.textContent = '';
-  if (textReasoningEl) textReasoningEl.textContent = '';
-
-  document.getElementById('slidesReasoningDetails').style.display = storedPdfExtraction ? '' : 'none';
-  document.getElementById('codeReasoningDetails').style.display = storedCodeExtraction ? '' : 'none';
-  document.getElementById('textReasoningDetails').style.display = storedTextFiles && storedTextFiles.length > 0 ? '' : 'none';
+  document.getElementById('verdictReasoning').textContent = '';
 
   try {
     const body = {
@@ -690,17 +678,6 @@ document.getElementById('judgeBtn')?.addEventListener('click', async () => {
 
           if (event.type === 'stage') {
             judgeProgressMsg.textContent = event.message;
-            if (event.stage === 'code') {
-              document.getElementById('codeReasoningDetails').open = true;
-            } else if (event.stage === 'text') {
-              document.getElementById('textReasoningDetails').open = true;
-            } else if (event.stage === 'judge') {
-              document.getElementById('slidesReasoningDetails').open = false;
-              document.getElementById('codeReasoningDetails').open = false;
-              document.getElementById('textReasoningDetails').open = false;
-            } else if (event.stage.startsWith('slide_')) {
-              document.getElementById('slidesReasoningDetails').open = true;
-            }
 
           } else if (event.type === 'token') {
             const targetEl = getReasoningTarget(event.stage);
@@ -749,12 +726,8 @@ document.getElementById('judgeBtn')?.addEventListener('click', async () => {
 });
 
 function getReasoningTarget(stage) {
-  // Judge reasoning is now handled via 'reasoning_token' events, not 'token' events.
-  // 'token' events for judge stage contain JSON output, not reasoning.
-  if (stage === 'judge') return null;
-  if (stage === 'code') return document.getElementById('codeReasoning');
-  if (stage === 'text') return document.getElementById('textReasoning');
-  if (stage.startsWith('slide_')) return document.getElementById('slidesReasoning');
+  // Only the final judge streams reasoning via 'reasoning_token' events.
+  // All other stages use /no_think so no reasoning is produced.
   return null;
 }
 
@@ -846,65 +819,16 @@ function renderVerdict(result) {
   document.getElementById('verdictJustification').textContent =
     feedback.justification || '';
 
-  // ── Reasoning section ──────────────────────────────────────
+  // ── Reasoning section (final judge only) ───────────────────
   const reasoningSection = document.getElementById('verdictReasoningSection');
-  const hasAnyReasoning = verdictReasoning ||
-    result.slides_report?.reasoning ||
-    result.code_report?.reasoning ||
-    result.text_analysis?.reasoning;
+  const reasoningEl = document.getElementById('verdictReasoning');
+  // Keep whatever was streamed live; fall back to the result's reasoning field
+  const liveReasoning = reasoningEl.textContent.trim();
+  const finalReasoning = liveReasoning || verdictReasoning;
 
-  if (hasAnyReasoning) {
+  if (finalReasoning) {
     reasoningSection.classList.remove('hidden');
-
-    // Judge reasoning
-    document.getElementById('verdictReasoning').textContent =
-      verdictReasoning || '(No reasoning captured from judge model)';
-
-    // Slides reasoning
-    const slidesReasoningEl = document.getElementById('slidesReasoning');
-    const slidesDetails = document.getElementById('slidesReasoningDetails');
-    const slidesReport = result.slides_report || {};
-    let slidesReasoningText = slidesReport.reasoning || '';
-
-    // Also gather per-slide reasoning
-    if (slidesReport.slide_analyses) {
-      const perSlide = slidesReport.slide_analyses
-        .filter(s => s.analysis?.reasoning)
-        .map(s => `Slide ${s.slide}: ${s.analysis.reasoning}`)
-        .join('\n\n');
-      if (perSlide) {
-        slidesReasoningText = (slidesReasoningText ? slidesReasoningText + '\n\n' : '') + perSlide;
-      }
-    }
-
-    if (slidesReasoningText) {
-      slidesReasoningEl.textContent = slidesReasoningText;
-      slidesDetails.style.display = '';
-    } else {
-      slidesDetails.style.display = 'none';
-    }
-
-    // Code reasoning
-    const codeReasoningEl = document.getElementById('codeReasoning');
-    const codeDetails = document.getElementById('codeReasoningDetails');
-    const codeReasoning = result.code_report?.reasoning || '';
-    if (codeReasoning) {
-      codeReasoningEl.textContent = codeReasoning;
-      codeDetails.style.display = '';
-    } else {
-      codeDetails.style.display = 'none';
-    }
-
-    // Text reasoning
-    const textReasoningEl = document.getElementById('textReasoning');
-    const textDetails = document.getElementById('textReasoningDetails');
-    const textReasoning = result.text_analysis?.reasoning || '';
-    if (textReasoning) {
-      textReasoningEl.textContent = textReasoning;
-      textDetails.style.display = '';
-    } else {
-      textDetails.style.display = 'none';
-    }
+    reasoningEl.textContent = finalReasoning;
   } else {
     reasoningSection.classList.add('hidden');
   }

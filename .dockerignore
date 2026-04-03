@@ -4,3 +4,5 @@ __pycache__
 DataSet
 .git
 *.md
+tests
+models

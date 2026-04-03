@@ -3,7 +3,7 @@ Quick pipeline test using the DataSet/Presence AI sample data.
 Run with: python test_pipeline.py
 """
 import sys, os, json
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 from repo_extract import codebase_to_json, detect_file_type, extract_imports, EXT_TYPE_MAP
 from judge_pipeline import run_pipeline_streaming

@@ -5,7 +5,6 @@ the repo_extract logic, and returns the structured JSON result.
 """
 
 import os
-import sys
 import json
 import mimetypes
 import tempfile
@@ -13,15 +12,13 @@ import shutil
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-# ── Add parent dir so we can import repo_extract ──────────────────────
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from repo_extract import detect_file_type, extract_imports, EXT_TYPE_MAP
 from pdf_extract import extract_pdf
 from video_extract import extract_video
 from judge_pipeline import run_pipeline_streaming
 
-# Serve the frontend from the INfra directory
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'INfra')
+# Serve the frontend from the frontend directory
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..', 'frontend')
 
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 CORS(app)  # Allow the frontend to call us
